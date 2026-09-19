@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sidebar-bg: #0b1121;
+  --color-sidebar-panel: #111827;
+  --color-sidebar-border: #1f2937;
+  --color-sidebar-text: #9ca3af;
+  --color-sidebar-text-active: #ffffff;
+  --color-sidebar-accent: #3b82f6;
+
+  /* Dark Theme Colors */
+  --color-dark-bg: #080d19;
+  --color-dark-panel: #111827;
+  --color-dark-border: #1f2937;
+  --color-dark-text-primary: #f3f4f6;
+  --color-dark-text-secondary: #9ca3af;
+
+  /* Light Theme Colors */
+  --color-light-bg: #f3f4f6;
+  --color-light-panel: #ffffff;
+  --color-light-border: #e5e7eb;
+  --color-light-text-primary: #111827;
+  --color-light-text-secondary: #6b7280;
+
+  /* Shared Accents */
+  --color-accent-blue: #3b82f6;
+  --color-accent-blue-hover: #2563eb;
+  --color-status-success: #22c55e;
+  --color-status-danger: #ef4444;
+  --color-status-warning: #f59e0b;
+}
+
+@layer base {
+  body {
+    @apply bg-[#f8fafc] text-slate-800 font-sans antialiased overflow-x-hidden;
+    margin: 0;
+  }
+}
+
+@layer components {
+  .dashboard-panel-dark {
+    @apply bg-[var(--color-dark-panel)] rounded-xl border border-[var(--color-dark-border)] shadow-lg overflow-hidden;
+  }
+  
+  .dashboard-panel-light {
+    @apply bg-[var(--color-light-panel)] rounded-xl border border-[var(--color-light-border)] shadow-sm overflow-hidden text-[var(--color-light-text-primary)];
+  }
+
+  .panel-header-dark {
+    @apply text-[var(--color-dark-text-primary)] font-semibold text-sm;
+  }
+
+  .panel-header-light {
+    @apply text-[var(--color-light-text-primary)] font-semibold text-sm;
+  }
+  
+  .btn-primary {
+    @apply bg-[var(--color-accent-blue)] hover:bg-[var(--color-accent-blue-hover)] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow-md shadow-blue-500/20;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* Base utilities for map so it matches light theme without filtering OSM */
+.light-map-tiles {
+  /* No filter needed for OSM light tiles */
+}
