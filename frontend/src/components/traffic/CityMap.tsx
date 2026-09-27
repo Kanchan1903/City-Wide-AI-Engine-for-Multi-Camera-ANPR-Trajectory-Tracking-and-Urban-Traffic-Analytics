@@ -227,8 +227,13 @@ const CityMap = ({ layers, routePath, routeSequence, timeOfDay, routeProgress = 
             return (
               <Marker key={cam.id} position={[cam.lat, cam.lng]} icon={new L.DivIcon({
                 className: `route-marker ${isStart ? 'start' : isEnd ? 'end' : 'mid'}`,
-                html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>`,
-                iconSize: [14, 14], iconAnchor: [7, 7]
+                html: `
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; font-family: sans-serif;">${idx + 1}</div>
+                    <div style="background-color: rgba(15, 23, 42, 0.85); color: #60a5fa; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-top: 4px; white-space: nowrap; font-weight: bold; font-family: monospace; border: 1px solid rgba(59, 130, 246, 0.3);">${cam.time}</div>
+                  </div>
+                `,
+                iconSize: [60, 50], iconAnchor: [30, 12]
               })}
               eventHandlers={{
                 click: () => openCameraModal(cam.id)
@@ -250,16 +255,26 @@ const CityMap = ({ layers, routePath, routeSequence, timeOfDay, routeProgress = 
               {/* Start Marker */}
               <Marker position={routePath[0]} icon={new L.DivIcon({
                 className: 'route-marker start',
-                html: `<div style="background-color: #10b981; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>`,
-                iconSize: [14, 14], iconAnchor: [7, 7]
+                html: `
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="background-color: #10b981; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; font-family: sans-serif;">1</div>
+                    <div style="background-color: rgba(15, 23, 42, 0.85); color: #60a5fa; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-top: 4px; white-space: nowrap; font-weight: bold; font-family: monospace; border: 1px solid rgba(59, 130, 246, 0.3);">Start</div>
+                  </div>
+                `,
+                iconSize: [60, 50], iconAnchor: [30, 12]
               })}>
                  <Popup className="custom-popup font-mono text-xs">Start Location</Popup>
               </Marker>
               {/* End Marker */}
               <Marker position={routePath[routePath.length - 1]} icon={new L.DivIcon({
                 className: 'route-marker end',
-                html: `<div style="background-color: #ef4444; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>`,
-                iconSize: [14, 14], iconAnchor: [7, 7]
+                html: `
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="background-color: #ef4444; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; font-family: sans-serif;">${routePath.length}</div>
+                    <div style="background-color: rgba(15, 23, 42, 0.85); color: #60a5fa; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-top: 4px; white-space: nowrap; font-weight: bold; font-family: monospace; border: 1px solid rgba(59, 130, 246, 0.3);">End</div>
+                  </div>
+                `,
+                iconSize: [60, 50], iconAnchor: [30, 12]
               })}>
                  <Popup className="custom-popup font-mono text-xs">End Location</Popup>
               </Marker>
