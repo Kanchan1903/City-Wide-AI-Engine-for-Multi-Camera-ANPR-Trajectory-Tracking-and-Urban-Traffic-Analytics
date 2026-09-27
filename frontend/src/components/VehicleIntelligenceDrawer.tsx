@@ -5,6 +5,7 @@ import { X, Map, Camera, FileText, Flag, Clock } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { useNavigate } from 'react-router-dom';
+import { buildTrajectory } from '../utils/trajectory';
 
 export default function VehicleIntelligenceDrawer() {
   const { isVehicleDrawerOpen, selectedVehicleId, closeVehicleDrawer, vehicles, detections, cameras, openCameraModal } = useStore();
@@ -15,9 +16,7 @@ export default function VehicleIntelligenceDrawer() {
   
   // Get history of this vehicle
   const history = selectedVehicleId 
-    ? detections
-        .filter(d => d.plate === selectedVehicleId)
-        .sort((a, b) => a.timestamp.localeCompare(b.timestamp)) // simple time sort
+    ? buildTrajectory(selectedVehicleId, detections, cameras)
     : [];
 
   const [selectedDetectionId, setSelectedDetectionId] = useState<string | null>(null);

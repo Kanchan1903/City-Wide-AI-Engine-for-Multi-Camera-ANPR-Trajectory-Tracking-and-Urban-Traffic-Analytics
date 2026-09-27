@@ -50,11 +50,21 @@ export default function ANPRDemo() {
       // Inject into centralized Zustand store so Tracking & Search work instantly
       data.forEach((res: any) => {
         if (res.processing_mode !== 'FAILED' && res.plate_number) {
+          const state = useStore.getState();
+          const cam = state.cameras.find(c => c.id === res.camera_id);
+          const veh = state.vehicles[res.plate_number] || { type: 'Unknown', color: 'Unknown' };
+          
           const newDetection: Detection = {
             id: res.detection_id,
             plate: res.plate_number,
             cameraId: res.camera_id,
+            location: cam ? cam.location : 'Unknown',
+            latitude: cam ? cam.latitude : 0,
+            longitude: cam ? cam.longitude : 0,
             timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            vehicleType: veh.type,
+            vehicleColor: veh.color,
+            direction: 'Unknown',
             confidence: res.plate_detection_confidence,
             plateImg: (selectedFile && selectedFile.type.startsWith('image')) ? (previewUrl || '/anpr_plate_crop.png') : '/anpr_plate_crop.png',
             vehicleImg: (selectedFile && selectedFile.type.startsWith('image')) ? (previewUrl || '/anpr_vehicle_match.png') : '/anpr_vehicle_match.png'

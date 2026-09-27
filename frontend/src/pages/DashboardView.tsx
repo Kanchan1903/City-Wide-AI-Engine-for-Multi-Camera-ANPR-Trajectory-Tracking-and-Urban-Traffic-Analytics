@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatTimeAgo } from '../utils/time';
+import { buildTrajectory } from '../utils/trajectory';
 import { useStore } from '../store/store';
 import { 
   AlertTriangle, Activity, Camera, TrendingUp, Video, MapPin, 
@@ -54,9 +55,7 @@ export default function DashboardView() {
 
   const targetVehiclePlate = 'MH12AB1234';
   const targetVehicle = vehicles[targetVehiclePlate];
-  const trackingHistory = detections
-    .filter(d => d.plate === targetVehiclePlate)
-    .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const trackingHistory = buildTrajectory(targetVehiclePlate, detections, cameras);
 
   return (
     <div className="flex flex-col gap-8 h-full animate-in fade-in duration-300 relative pb-8">

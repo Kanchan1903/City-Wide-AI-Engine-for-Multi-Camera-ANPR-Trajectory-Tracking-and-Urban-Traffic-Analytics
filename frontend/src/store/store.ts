@@ -21,8 +21,14 @@ export interface Detection {
   id: string;
   plate: string;
   cameraId: string;
+  location: string;
+  latitude: number;
+  longitude: number;
   timestamp: string;
+  vehicleType: string;
+  vehicleColor: string;
   confidence: number;
+  direction: string;
   plateImg: string;
   vehicleImg: string;
 }
@@ -35,6 +41,7 @@ export interface Alert {
   type: 'warning' | 'error' | 'info';
   read: boolean;
   plate?: string;
+  cameraId?: string;
 }
 
 interface AppState {
@@ -93,27 +100,26 @@ const initialVehicles: Record<string, Vehicle> = {
   'KA01HQ1122': { plate: 'KA01HQ1122', make: 'Tata Nexon', color: 'Blue', type: 'SUV', img: '/veh_ka01.png' },
 };
 
-// Generate some historical detections for multiple vehicles
 const initialDetections: Detection[] = [
   // MH12AB1234 (Route: CAM_001 -> CAM_002 -> CAM_003 -> CAM_004)
-  { id: 'd1', plate: 'MH12AB1234', cameraId: 'CAM_001', timestamp: '10:00:12', confidence: 0.96, plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
-  { id: 'd2', plate: 'MH12AB1234', cameraId: 'CAM_002', timestamp: '10:05:14', confidence: 0.93, plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
-  { id: 'd3', plate: 'MH12AB1234', cameraId: 'CAM_003', timestamp: '10:12:30', confidence: 0.91, plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
-  { id: 'd4', plate: 'MH12AB1234', cameraId: 'CAM_004', timestamp: '10:18:45', confidence: 0.89, plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
+  { id: 'd1', plate: 'MH12AB1234', cameraId: 'CAM_001', location: 'Hinjawadi', latitude: 18.559, longitude: 73.786, timestamp: '10:00:12', vehicleType: 'Car', vehicleColor: 'White', confidence: 0.96, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
+  { id: 'd2', plate: 'MH12AB123A', cameraId: 'CAM_002', location: 'Shivajinagar', latitude: 18.525, longitude: 73.855, timestamp: '10:05:14', vehicleType: 'Car', vehicleColor: 'White', confidence: 0.73, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
+  { id: 'd3', plate: 'MH12AB1234', cameraId: 'CAM_003', location: 'JM Road', latitude: 18.527, longitude: 73.858, timestamp: '10:12:30', vehicleType: 'Car', vehicleColor: 'White', confidence: 0.91, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
+  { id: 'd4', plate: 'MH12ABI234', cameraId: 'CAM_004', location: 'Wagholi', latitude: 18.580, longitude: 73.978, timestamp: '10:18:45', vehicleType: 'Car', vehicleColor: 'White', confidence: 0.89, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
 
   // MH14XY9999 (Route: CAM_006 -> CAM_003 -> CAM_002)
-  { id: 'd5', plate: 'MH14XY9999', cameraId: 'CAM_006', timestamp: '08:15:00', confidence: 0.94, plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
-  { id: 'd6', plate: 'MH14XY9999', cameraId: 'CAM_003', timestamp: '08:25:30', confidence: 0.88, plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
-  { id: 'd7', plate: 'MH14XY9999', cameraId: 'CAM_002', timestamp: '08:31:10', confidence: 0.91, plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
+  { id: 'd5', plate: 'MH14XY9999', cameraId: 'CAM_006', location: 'Swargate', latitude: 18.501, longitude: 73.859, timestamp: '08:15:00', vehicleType: 'Car', vehicleColor: 'Silver', confidence: 0.94, direction: 'Northbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
+  { id: 'd6', plate: 'MH14XY9999', cameraId: 'CAM_003', location: 'JM Road', latitude: 18.527, longitude: 73.858, timestamp: '08:25:30', vehicleType: 'Car', vehicleColor: 'Silver', confidence: 0.88, direction: 'Northbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
+  { id: 'd7', plate: 'MH14XY9999', cameraId: 'CAM_002', location: 'Shivajinagar', latitude: 18.525, longitude: 73.855, timestamp: '08:31:10', vehicleType: 'Car', vehicleColor: 'Silver', confidence: 0.91, direction: 'Northbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
 
   // DL8CX4321 (Route: CAM_005 -> CAM_002 -> CAM_001)
-  { id: 'd8', plate: 'DL8CX4321', cameraId: 'CAM_005', timestamp: '14:30:00', confidence: 0.98, plateImg: '/plate_dl8c.png', vehicleImg: '/veh_dl8c.png' },
-  { id: 'd9', plate: 'DL8CX4321', cameraId: 'CAM_002', timestamp: '14:38:20', confidence: 0.95, plateImg: '/plate_dl8c.png', vehicleImg: '/veh_dl8c.png' },
-  { id: 'd10', plate: 'DL8CX4321', cameraId: 'CAM_001', timestamp: '15:02:15', confidence: 0.92, plateImg: '/plate_dl8c.png', vehicleImg: '/veh_dl8c.png' },
+  { id: 'd8', plate: 'DL8CX4321', cameraId: 'CAM_005', location: 'University Road', latitude: 18.532, longitude: 73.829, timestamp: '14:30:00', vehicleType: 'SUV', vehicleColor: 'Black', confidence: 0.98, direction: 'Westbound', plateImg: '/plate_dl8c.png', vehicleImg: '/veh_dl8c.png' },
+  { id: 'd9', plate: 'DL8CX4321', cameraId: 'CAM_002', location: 'Shivajinagar', latitude: 18.525, longitude: 73.855, timestamp: '14:38:20', vehicleType: 'SUV', vehicleColor: 'Black', confidence: 0.95, direction: 'Westbound', plateImg: '/plate_dl8c.png', vehicleImg: '/veh_dl8c.png' },
+  { id: 'd10', plate: 'DL8CX4321', cameraId: 'CAM_001', location: 'Hinjawadi', latitude: 18.559, longitude: 73.786, timestamp: '15:02:15', vehicleType: 'SUV', vehicleColor: 'Black', confidence: 0.92, direction: 'Westbound', plateImg: '/plate_dl8c.png', vehicleImg: '/veh_dl8c.png' },
 
   // KA01HQ1122 (Route: CAM_004 -> CAM_006)
-  { id: 'd11', plate: 'KA01HQ1122', cameraId: 'CAM_004', timestamp: '18:45:00', confidence: 0.85, plateImg: '/plate_ka01.png', vehicleImg: '/veh_ka01.png' },
-  { id: 'd12', plate: 'KA01HQ1122', cameraId: 'CAM_006', timestamp: '19:20:10', confidence: 0.81, plateImg: '/plate_ka01.png', vehicleImg: '/veh_ka01.png' },
+  { id: 'd11', plate: 'KA01HQ1122', cameraId: 'CAM_004', location: 'Wagholi', latitude: 18.580, longitude: 73.978, timestamp: '18:45:00', vehicleType: 'SUV', vehicleColor: 'Blue', confidence: 0.85, direction: 'Southbound', plateImg: '/plate_ka01.png', vehicleImg: '/veh_ka01.png' },
+  { id: 'd12', plate: 'KA01HQ1122', cameraId: 'CAM_006', location: 'Swargate', latitude: 18.501, longitude: 73.859, timestamp: '19:20:10', vehicleType: 'SUV', vehicleColor: 'Blue', confidence: 0.81, direction: 'Southbound', plateImg: '/plate_ka01.png', vehicleImg: '/veh_ka01.png' },
 ];
 
 export const useStore = create<AppState>((set, get) => ({
@@ -121,7 +127,7 @@ export const useStore = create<AppState>((set, get) => ({
   vehicles: initialVehicles,
   detections: initialDetections,
   alerts: [
-    { id: 'a1', title: 'Suspicious Vehicle Detected', description: 'Vehicle MH12AB1234 spotted at CAM_007', timestamp: Date.now() - 10 * 60 * 1000, type: 'warning', read: false, plate: 'MH12AB1234' }
+    { id: 'a1', title: 'Suspicious Vehicle Detected', description: 'Vehicle MH12AB1234 spotted at CAM_004', timestamp: Date.now() - 10 * 60 * 1000, type: 'warning', read: false, plate: 'MH12AB1234', cameraId: 'CAM_004' }
   ],
   globalSearchPlate: 'MH12AB1234',
   demoModeActive: false,
@@ -162,18 +168,19 @@ export const useStore = create<AppState>((set, get) => ({
     let updatedAlerts = [...state.alerts];
     
     // In Demo Mode, simulate more activity
-    if (state.demoModeActive && Math.random() < 0.1) {
+      if (state.demoModeActive && Math.random() < 0.1) {
       const alertTypes: ('warning' | 'error' | 'info')[] = ['warning', 'error', 'info'];
       const randomType = alertTypes[Math.floor(Math.random() * alertTypes.length)];
       
       const newAlert: Alert = {
         id: `alert_${Date.now()}`,
         title: randomType === 'error' ? 'Blacklisted Vehicle Detected' : randomType === 'warning' ? 'Speed Violation' : 'Traffic Congestion',
-        description: randomType === 'error' ? 'Vehicle MH14XY9999 (Stolen) detected at CAM_002.' : randomType === 'warning' ? 'Vehicle KA01HQ1122 exceeding 80km/h at CAM_005.' : 'Heavy traffic detected at Junction #4.',
+        description: randomType === 'error' ? 'Vehicle MH14XY9999 (Stolen) detected at CAM_002.' : randomType === 'warning' ? 'Vehicle KA01HQ1122 exceeding 80km/h at CAM_006.' : 'Heavy traffic detected at Junction #4.',
         timestamp: Date.now(),
         type: randomType,
         read: false,
-        plate: randomType === 'error' ? 'MH14XY9999' : randomType === 'warning' ? 'KA01HQ1122' : undefined
+        plate: randomType === 'error' ? 'MH14XY9999' : randomType === 'warning' ? 'KA01HQ1122' : undefined,
+        cameraId: randomType === 'error' ? 'CAM_002' : randomType === 'warning' ? 'CAM_006' : undefined
       };
       
       updatedAlerts = [newAlert, ...updatedAlerts].slice(0, 50); // Keep max 50

@@ -39,8 +39,11 @@ export default function AlertsView() {
               const isWarning = alert.type === 'warning';
               
               // Map to a detection record for consistent data
-              const detection = alert.plate ? detections.find(d => d.plate === alert.plate) : null;
-              const camera = detection ? cameras.find(c => c.id === detection.cameraId) : null;
+              let detection = alert.plate ? detections.find(d => d.plate === alert.plate && (!alert.cameraId || d.cameraId === alert.cameraId)) : null;
+              if (!detection && alert.plate) {
+                detection = detections.find(d => d.plate === alert.plate) || null; // fallback
+              }
+              const camera = alert.cameraId ? cameras.find(c => c.id === alert.cameraId) : (detection ? cameras.find(c => c.id === detection.cameraId) : null);
 
               const plate = detection ? detection.plate : (alert.plate || 'Unknown Vehicle');
               const timeDisplay = detection ? detection.timestamp : formatTimeAgo(alert.timestamp);
@@ -48,11 +51,11 @@ export default function AlertsView() {
               let description = alert.description;
               if (detection) {
                 if (alert.title.includes('Speed')) {
-                  description = `Vehicle ${plate} exceeding 80km/h at ${detection.cameraId}.`;
+                  description = `Vehicle ${plate} exceeding 80km/h at ${camera?.id || detection.cameraId}.`;
                 } else if (alert.title.includes('Blacklisted')) {
-                  description = `Vehicle ${plate} (Stolen) detected at ${detection.cameraId}.`;
+                  description = `Vehicle ${plate} (Stolen) detected at ${camera?.id || detection.cameraId}.`;
                 } else {
-                  description = `Vehicle ${plate} spotted at ${detection.cameraId}`;
+                  description = `Vehicle ${plate} spotted at ${camera?.id || detection.cameraId}`;
                 }
               }
               

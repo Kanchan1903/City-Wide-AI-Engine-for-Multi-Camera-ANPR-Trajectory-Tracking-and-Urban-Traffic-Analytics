@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../store/store';
 import CityMap from '../components/traffic/CityMap';
 import { Search, Map as MapIcon, Route, Clock, Navigation } from 'lucide-react';
+import { buildTrajectory } from '../utils/trajectory';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
@@ -25,10 +26,8 @@ export default function VehicleRoutes() {
 
   const normalizedSearch = searchTerm.trim().toUpperCase();
   const vehicle = vehicles[normalizedSearch];
-  const history = vehicle 
-    ? detections
-        .filter(d => d.plate === normalizedSearch)
-        .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+  const history = vehicle || searchTerm 
+    ? buildTrajectory(normalizedSearch, detections, cameras)
     : [];
 
   const routePath = history.map(h => {
@@ -145,8 +144,12 @@ export default function VehicleRoutes() {
                             </span>
                             <span className="text-[10px] font-bold text-blue-400 bg-[#1769FF]/10 px-2 py-0.5 rounded">{det.timestamp}</span>
                           </div>
-                          <div className="text-xs font-medium text-slate-300 mb-2 flex items-center">
-                            <Navigation size={10} className="mr-1 text-slate-400" /> {cam?.location}
+                          <div className="text-xs font-medium text-slate-300 mb-2 flex flex-col gap-1">
+                            <div className="flex items-center"><Navigation size={10} className="mr-1 text-slate-400" /> {det.location}</div>
+                            <div className="flex gap-2 mt-1">
+                              <Badge variant="success" className="text-[9px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Conf: {(det.confidence * 100).toFixed(0)}%</Badge>
+                              <Badge variant="info" className="text-[9px] bg-blue-500/10 text-blue-400 border-blue-500/20">{det.direction}</Badge>
+                            </div>
                           </div>
                         </Card>
                       </div>
