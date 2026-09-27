@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City-Wide AI Engine Architecture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            
+            --m1-color: #2563eb; 
+            --m1-bg: #eff6ff;
+            --m1-border: #bfdbfe;
+            --m1-gradient: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            
+            --m2-color: #16a34a; 
+            --m2-bg: #f0fdf4;
+            --m2-border: #bbf7d0;
+            --m2-gradient: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            
+            --m3-color: #ea580c; 
+            --m3-bg: #fff7ed;
+            --m3-border: #fed7aa;
+            --m3-gradient: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        }
+        
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #0f172a;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 12px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .modules {
+            display: flex;
+            gap: 24px;
+            align-items: stretch;
+            position: relative;
+        }
+
+        .arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #cbd5e1;
+            font-size: 2rem;
+            flex-shrink: 0;
+            font-weight: 300;
+        }
+
+        .module {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .module-header {
+            padding: 24px;
+            border-bottom: 2px solid;
+            text-align: center;
+        }
+
+        .m1 .module-header { background: var(--m1-gradient); border-color: var(--m1-border); }
+        .m2 .module-header { background: var(--m2-gradient); border-color: var(--m2-border); }
+        .m3 .module-header { background: var(--m3-gradient); border-color: var(--m3-border); }
+
+        .module-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .m1 .module-header h2 { color: var(--m1-color); }
+        .m2 .module-header h2 { color: var(--m2-color); }
+        .m3 .module-header h2 { color: var(--m3-color); }
+
+        .module-content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            flex: 1;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .data-sources {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            text-align: center;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .pipeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        .step {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .step:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border-color: #cbd5e1;
+        }
+
+        .step:not(:last-child)::after {
+            content: '↓';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #cbd5e1;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+
+        .step-tech {
+            font-style: italic;
+            font-size: 0.85rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            line-height: 1.4;
+        }
+
+        .output-box {
+            margin-top: auto;
+            background: #ffffff;
+            border: 2px solid;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .m1 .output-box { border-color: var(--m1-border); background: var(--m1-bg); }
+        .m2 .output-box { border-color: var(--m2-border); background: var(--m2-bg); }
+        .m3 .output-box { border-color: var(--m3-border); background: var(--m3-bg); }
+
+        .tech-stack {
+            margin-top: 50px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .tech-stack h3 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 32px;
+            font-size: 1.5rem;
+            color: #0f172a;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+        }
+
+        .tech-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            background: #f8fafc;
+            transition: border-color 0.2s;
+        }
+        
+        .tech-card:hover {
+            border-color: #cbd5e1;
+            background: #ffffff;
+        }
+
+        .tech-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .tech-card p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #334155;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .alerts-engine {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 40px;
+        }
+
+        .alerts-section {
+            flex: 1;
+        }
+        
+        .alerts-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #0f172a;
+        }
+
+        .alert-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-right: 12px;
+            min-width: 80px;
+        }
+        
+        .alert-critical { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .alert-warning { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .alert-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .alert-special { background: #dcfce3; color: #15803d; border: 1px solid #bbf7d0; }
+        
+        .alert-item {
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            color: #475569;
+            display: flex;
+            align-items: center;
+        }
+
+        .channel-tags {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .channel-tag {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #334155;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        @media (max-width: 1024px) {
+            .modules {
+                flex-direction: column;
+            }
+            .arrow {
+                transform: rotate(90deg);
+                padding: 10px 0;
+            }
+            .alerts-engine {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>City-Wide AI Engine</h1>
+        <p>Multi-Camera ANPR Trajectory Tracking and Urban Traffic Analytics</p>
+    </div>
+
+    <div class="modules">
+        <!-- Module 1 -->
+        <div class="module m1">
+            <div class="module-header">
+                <h2>Module 1: Plate Recognition</h2>
+                <div style="font-size:0.9rem; color:var(--m1-color); opacity:0.85; margin-top:6px; font-weight:500;">(ANPR/OCR Engine)</div>
+            </div>
+            <div class="module-content">
+                <div>
+                    <div class="section-label">Data Sources</div>
+                    <div class="data-sources">
+                        ANPR/CCTV city cameras, NVR/VMS video streams, smart city systems, RTO/blacklist DB
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="section-label">Processing Pipeline</div>
+                    <div class="pipeline">
+                        <div class="step">
+                            <div class="step-title">Camera Connection</div>
+                            <div class="step-tech">RTSP + ONVIF (Hikvision, Dahua, Bosch, Axis)</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Vehicle & Plate Detection</div>
+                            <div class="step-tech">YOLOv8</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Quality Check</div>
+                            <div class="step-tech">Blur, size, angle, damage check</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Image Enhancement</div>
+                            <div class="step-tech">DeblurGAN-v2, Real-ESRGAN, LaMa, OpenCV</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Frame Tracking</div>
+                            <div class="step-tech">ByteTrack</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">OCR Recognition</div>
+                            <div class="step-tech">PaddleOCR (>90%)<br>Fallback: Qwen2-VL, LLaVA, GPT-4o Vision, Gemini</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Multi-Frame Voting & Validation</div>
+                            <div class="step-tech">Cross-checks consensus + Regex (Indian Plate)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="output-box">
+                    <strong>Outputs:</strong> Plate number, vehicle image, timestamp & camera ID, confidence tag (High/Med/Low)
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <!-- Module 2 -->
+        <div class="module m2">
+            <div class="module-header">
+                <h2>Module 2: Vehicle Route</h2>
+                <div style="font-size:0.9rem; color:var(--m2-color); opacity:0.85; margin-top:6px; font-weight:500;">(Trajectory Tracking)</div>
+            </div>
+            <div class="module-content">
+                <div>
+                    <div class="section-label">Data Sources</div>
+                    <div class="data-sources">
+                        Plate data (Module 1, via API/DB), city camera network, OSM road map
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="section-label">Processing Pipeline</div>
+                    <div class="pipeline">
+                        <div class="step">
+                            <div class="step-title">Candidate Retrieval</div>
+                            <div class="step-tech">Levenshtein Distance (plate + timestamp + similarity)</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Vehicle Re-Identification</div>
+                            <div class="step-tech">OSNet / TransReID (cross-camera visual confirm)</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Physics & Temporal Filter</div>
+                            <div class="step-tech">Distance/time/speed logic validation</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Road Graph Matching</div>
+                            <div class="step-tech">OSM + NetworkX (snap to road, build graph)</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Trajectory Reconstruction</div>
+                            <div class="step-tech">Kalman Filter (sort, gap-fill, remove outliers)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="output-box" style="margin-top:auto;">
+                    <strong>Outputs:</strong> Chronological vehicle trajectory (camera sequence, travel time, road-based path) via Leaflet.js
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <!-- Module 3 -->
+        <div class="module m3">
+            <div class="module-header">
+                <h2>Module 3: Traffic Insights</h2>
+                <div style="font-size:0.9rem; color:var(--m3-color); opacity:0.85; margin-top:6px; font-weight:500;">(Analytics & Alerts)</div>
+            </div>
+            <div class="module-content">
+                <div>
+                    <div class="section-label">Data Sources</div>
+                    <div class="data-sources">
+                        Vehicle detections (PostgreSQL/Kafka), vehicle trajectories
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="section-label">Processing Pipeline</div>
+                    <div class="pipeline">
+                        <div class="step">
+                            <div class="step-title">Data Preparation</div>
+                            <div class="step-tech">Ingestion & time-window aggregation (Pandas + PostGIS)</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Origin-Destination Analysis</div>
+                            <div class="step-tech">Volume/density, top OD flow mapping (NetworkX)</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Congestion Analysis</div>
+                            <div class="step-tech">Historical vs live severity scoring (StatsModels)</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Live Traffic Heatmap</div>
+                            <div class="step-tech">Real-time density viz (Kepler.gl / Leaflet.heat)</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-title">Traffic Prediction</div>
+                            <div class="step-tech">Historical + live forecast (STGCN / PDFormer, PyTorch)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="output-box">
+                    <strong>Outputs:</strong> Total vehicles, congestion counts, delay time, heatmaps, trends (D3.js / Recharts)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tech Stack & Alerts Summary -->
+    <div class="tech-stack">
+        <h3>Overall Tech Stack Summary</h3>
+        
+        <div class="tech-grid">
+            <div class="tech-card">
+                <h4>Computer Vision</h4>
+                <p>YOLOv8, ByteTrack, PaddleOCR, DeblurGAN-v2, Real-ESRGAN, LaMa</p>
+            </div>
+            <div class="tech-card">
+                <h4>Re-ID / Matching</h4>
+                <p>OSNet, TransReID, Levenshtein Distance</p>
+            </div>
+            <div class="tech-card">
+                <h4>Geospatial</h4>
+                <p>OpenStreetMap, NetworkX, PostGIS, Kalman Filter, Leaflet.js</p>
+            </div>
+            <div class="tech-card">
+                <h4>Analytics / ML</h4>
+                <p>Pandas, StatsModels, PyTorch, STGCN/PDFormer</p>
+            </div>
+            <div class="tech-card">
+                <h4>Data & Visualization</h4>
+                <p>PostgreSQL, Kafka, Kepler.gl, D3.js, Recharts</p>
+            </div>
+        </div>
+
+        <div class="alerts-engine">
+            <div class="alerts-section">
+                <div class="alerts-title">Alerts & Notifications Engine</div>
+                <div class="alert-item"><span class="alert-badge alert-critical">CRITICAL</span> Blacklisted vehicle, impossible trajectory</div>
+                <div class="alert-item"><span class="alert-badge alert-warning">WARNING</span> Suspicious route, no plate detected, traffic jam</div>
+                <div class="alert-item"><span class="alert-badge alert-info">INFO</span> Low confidence OCR</div>
+                <div class="alert-item"><span class="alert-badge alert-special">SPECIAL</span> Green corridor</div>
+            </div>
+            <div class="alerts-section">
+                <div class="alerts-title">Notification Channels</div>
+                <div class="channel-tags">
+                    <div class="channel-tag">Dashboard</div>
+                    <div class="channel-tag">Email</div>
+                    <div class="channel-tag">SMS</div>
+                    <div class="channel-tag">Push</div>
+                    <div class="channel-tag">Webhook / API</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
