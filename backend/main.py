@@ -5,13 +5,14 @@ from pydantic_settings import BaseSettings
 import logging
 
 class Settings(BaseSettings):
-    DATABASE_URL: str
-    SECRET_KEY: str
+    DATABASE_URL: str = "sqlite:///./sih_anpr.db"
+    SECRET_KEY: str = "supersecretjwtkey_replace_in_production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 settings = Settings()
 logger = logging.getLogger(__name__)
