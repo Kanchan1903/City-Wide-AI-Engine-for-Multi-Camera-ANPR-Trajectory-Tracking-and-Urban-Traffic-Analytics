@@ -3,6 +3,15 @@ services:
     name: trace360-backend
     env: docker
     region: ohio
-    plan: free # Note: ML models might require a paid plan due to 512MB RAM limit on free tier
+    plan: free
     rootDir: backend
-    healthCheckPath: /
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./sih_anpr.db
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"

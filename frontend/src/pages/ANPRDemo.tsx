@@ -37,7 +37,8 @@ export default function ANPRDemo() {
     formData.append('camera_id', 'CAM_005'); // default demo camera
 
     try {
-      const response = await fetch('http://localhost:8001/api/anpr/process-image', {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const response = await fetch(`${apiBase}/api/anpr/process-image`, {
         method: 'POST',
         body: formData,
       });
@@ -75,7 +76,7 @@ export default function ANPRDemo() {
       
     } catch (err) {
       console.error(err);
-      alert('Processing failed. Is the backend running on port 8001?');
+      alert('Processing failed. Is the backend server running?');
     } finally {
       setIsProcessing(false);
     }

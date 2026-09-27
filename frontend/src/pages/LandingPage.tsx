@@ -58,7 +58,7 @@ export default function LandingPage() {
       {/* Main Content Area */}
       <main className="relative z-10 w-full max-w-[1400px] mx-auto min-h-[calc(100vh-100px)] flex flex-col items-center justify-center px-4 py-12 md:py-0">
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch w-full min-h-[600px] pb-32 lg:pb-48">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch w-full min-h-[600px] pb-[150px] lg:pb-[250px]">
           
           {/* Left: Title & Team */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left z-20 order-2 lg:order-1 justify-center py-4 lg:py-0 relative">
