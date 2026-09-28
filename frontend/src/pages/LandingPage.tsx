@@ -217,7 +217,9 @@ export default function LandingPage() {
  </div>
  <div className="relative aspect-video bg-slate-900 overflow-hidden">
  {/* Mock image content (simulated with CSS for now or use a placeholder) */}
- <img src="/dummy.jpg" alt="CCTV Feed" className="w-full h-full object-cover opacity-60 grayscale-[20%]" />
+ <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-700 via-slate-800 to-slate-900 opacity-60 flex items-center justify-center">
+ <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+ </div>
  
  {/* ANPR Overlay Box on Image */}
  <div className="absolute top-[40%] left-[35%] w-[30%] h-[20%] border-2 border-cyan-400 bg-cyan-400/20 flex items-end justify-center pb-0.5">

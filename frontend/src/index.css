@@ -61,6 +61,28 @@
   --color-status-warning: var(--color-amber-500);
 }
 
+.light {
+  --color-slate-50: #12343B;
+  --color-slate-100: #1E4A52;
+  --color-slate-200: #2A5C66;
+  --color-slate-300: #39636C;
+  --color-slate-400: #557985;
+  --color-slate-500: #8BADC1;
+  --color-slate-600: #9EB0B3;
+  --color-slate-700: #C2C9CA;
+  --color-slate-800: #FFFFFF; /* Cards/Panels */
+  --color-slate-900: #F4F8F9; /* Main background */
+  --color-slate-950: #E5E7E6;
+  
+  --color-cyan-400: #28938D;
+  --color-cyan-500: #35B7B0;
+  
+  --color-sidebar-bg: var(--color-slate-900);
+  --color-sidebar-panel: var(--color-slate-800);
+  --color-dark-bg: var(--color-slate-900);
+  --color-dark-panel: var(--color-slate-800);
+}
+
 @layer base {
   body {
     @apply bg-[#f8fafc] text-slate-800 font-sans antialiased overflow-x-hidden;

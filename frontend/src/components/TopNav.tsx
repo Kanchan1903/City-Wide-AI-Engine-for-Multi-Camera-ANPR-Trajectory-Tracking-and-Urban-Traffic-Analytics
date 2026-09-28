@@ -1,9 +1,14 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Shield, Sun, Moon } from 'lucide-react';
+import { useStore } from '../store/store';
 
 export default function TopNav() {
  const navigate = useNavigate();
+ const theme = useStore((state) => state.theme);
+ const toggleTheme = useStore((state) => state.toggleTheme);
+ const theme = useStore((state) => state.theme);
+ const toggleTheme = useStore((state) => state.toggleTheme);
 
  return (
  <nav className="relative z-50 pt-6 px-4 md:px-8 max-w-[1400px] mx-auto w-full">
@@ -89,7 +94,10 @@ export default function TopNav() {
  </NavLink>
  </div>
  {/* Action Toggle / Logout */}
- <div className="flex items-center justify-end shrink-0 ml-2 lg:ml-4">
+ <div className="flex items-center justify-end shrink-0 ml-2 lg:ml-4 gap-3">
+  <button onClick={toggleTheme} className="p-2 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 transition-all flex items-center justify-center">
+    {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+  </button>
  <button 
  onClick={() => navigate('/')}
  className="px-4 py-1.5 rounded-full bg-slate-800 border border-slate-700 hover:bg-red-900/40 hover:border-red-500/50 hover:text-red-400 text-slate-300 text-sm font-bold shadow-sm transition-all"

@@ -27,6 +27,17 @@ function App() {
  return () => clearInterval(interval);
  }, [simulateTick, demoModeActive]);
 
+ const theme = useStore((state) => state.theme);
+ useEffect(() => {
+   if (theme === 'light') {
+     document.documentElement.classList.remove('dark');
+     document.documentElement.classList.add('light');
+   } else {
+     document.documentElement.classList.remove('light');
+     document.documentElement.classList.add('dark');
+   }
+ }, [theme]);
+
  return (
  <AuthProvider>
  <Router>

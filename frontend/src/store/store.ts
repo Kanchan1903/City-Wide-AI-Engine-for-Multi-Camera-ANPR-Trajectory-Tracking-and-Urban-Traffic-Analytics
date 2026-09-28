@@ -61,7 +61,9 @@ interface AppState {
  selectedCameraTimestamp: string | null;
  isVehicleDrawerOpen: boolean;
  isCameraModalOpen: boolean;
+ theme: 'dark' | 'light';
  
+ toggleTheme: () => void;
  toggleDemoMode: () => void;
  setGlobalSearchPlate: (plate: string) => void;
  markAlertAsRead: (id: string) => void;
@@ -152,7 +154,9 @@ export const useStore = create<AppState>((set, get) => ({
  activeAlerts: 1,
  vehiclesToday: 42105,
  },
+ theme: 'dark',
  
+ toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
  toggleDemoMode: () => set((state) => ({ demoModeActive: !state.demoModeActive })),
  setGlobalSearchPlate: (plate) => set({ globalSearchPlate: plate.trim().toUpperCase() }),
  
