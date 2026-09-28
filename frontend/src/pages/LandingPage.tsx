@@ -1,229 +1,296 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { 
-  Shield, Camera, MapPin, Activity, AlertTriangle, 
-  BarChart3, Play, ChevronRight, Car 
+ Shield, Camera, MapPin, Activity, AlertTriangle, 
+ BarChart3, Play, ChevronRight, Car, Video, 
+ Crosshair, Radio, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import TopNav from '../components/TopNav';
 
 export default function LandingPage() {
-  const navigate = useNavigate();
+ const navigate = useNavigate();
 
-  const stickerCamera = (
-    <Sticker className="rotate-[-10deg] delay-100 hover:rotate-0">
-      <Camera size={40} className="text-indigo-400" />
-      <div className="text-xs font-bold text-slate-300 mt-1">ANPR Feed</div>
-    </Sticker>
-  );
+ // Subtle counters
+ const [vehiclesTracked, setVehiclesTracked] = useState(42850);
+ 
+ useEffect(() => {
+ const interval = setInterval(() => {
+ setVehiclesTracked(prev => prev + Math.floor(Math.random() * 3));
+ }, 2500);
+ return () => clearInterval(interval);
+ }, []);
 
-  const stickerPlate = (
-    <Sticker className="rotate-[5deg] delay-200 hover:rotate-0">
-      <div className="bg-yellow-500 border-2 border-black rounded px-3 py-1 font-mono font-bold text-lg text-black shadow-inner">
-        MH12AB1234
-      </div>
-    </Sticker>
-  );
+ return (
+ <div className="min-h-screen bg-slate-900 text-slate-300 font-sans relative selection:bg-blue-500/30 flex flex-col">
+ <TopNav />
 
-  const stickerAnalytics = (
-    <Sticker className="rotate-[12deg] delay-300 hover:rotate-0">
-      <BarChart3 size={40} className="text-blue-400" />
-      <div className="text-xs font-bold text-slate-300 mt-1">Analytics</div>
-    </Sticker>
-  );
+ <main className="relative z-10 w-full max-w-[1400px] mx-auto flex-1 flex flex-col px-4 py-12 md:py-8 lg:py-16">
+ 
+ {/* Hero Section */}
+ <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16 lg:mb-24">
+ 
+ {/* Left Content (5 cols) */}
+ <div className="lg:col-span-5 flex flex-col items-start z-20">
+ <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-xs font-bold text-slate-300 mb-6 tracking-wide shadow-sm">
+ <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div> 
+ CITY TRAFFIC MANAGEMENT PLATFORM
+ </div>
+ 
+ <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-4 drop-shadow-sm leading-tight">
+ TRACE<span className="text-blue-500">360</span>
+ </h1>
+ 
+ <h2 className="text-xl md:text-2xl font-semibold text-slate-300 mb-6 leading-snug">
+ City-Wide Vehicle Intelligence <br className="hidden lg:block" />& Traffic Analytics
+ </h2>
+ 
+ <p className="text-slate-400 text-lg mb-10 max-w-lg leading-relaxed">
+ Monitor vehicles, track movement across cameras, and understand city-wide traffic patterns from a single, unified command platform.
+ </p>
+ 
+ <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+ <button 
+ onClick={() => navigate('/dashboard')}
+ className="w-full sm:w-auto px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 transition-all active:scale-95"
+ >
+ Open Dashboard <ChevronRight className="w-5 h-5" />
+ </button>
+ <button 
+ onClick={() => navigate('/dashboard/anpr')}
+ className="w-full sm:w-auto px-7 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95"
+ >
+ <Camera className="w-5 h-5" /> View ANPR Demo
+ </button>
+ </div>
+ </div>
 
-  const stickerTracking = (
-    <Sticker className="rotate-[-8deg] delay-500 hover:rotate-0">
-      <MapPin size={40} className="text-red-400" />
-      <div className="text-xs font-bold text-slate-300 mt-1">Live Tracking</div>
-    </Sticker>
-  );
+ {/* Right Content - Map/Dashboard Visualization (7 cols) */}
+ <div className="lg:col-span-7 z-20 w-full relative">
+ <div className="bg-slate-800 rounded-xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[400px] md:h-[500px] lg:h-[600px] relative">
+ 
+ {/* Panel Header */}
+ <div className="h-10 bg-slate-800 flex items-center justify-between px-4 shrink-0 border-b border-slate-800">
+ <div className="flex items-center gap-3">
+ <div className="flex gap-1.5">
+ <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+ <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+ <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+ </div>
+ <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden md:block">
+ TRACE360 Command Operations • Sector 04
+ </span>
+ </div>
+ <div className="flex items-center gap-2">
+ <span className="text-[10px] font-bold text-slate-400">GPS SYNC</span>
+ <div className="h-3 w-px bg-slate-600 mx-1"></div>
+ <div className="flex items-center gap-1.5 bg-emerald-500/10 px-2 py-0.5 rounded text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
+ <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+ LIVE
+ </div>
+ </div>
+ </div>
+ 
+ {/* Main Visualization Stage */}
+ <div className="flex-1 relative bg-slate-900 overflow-hidden">
+ 
+ {/* SVG Map Layer */}
+ <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" viewBox="0 0 800 500">
+ <defs>
+ <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+ <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" strokeWidth="0.5" strokeOpacity="0.3" />
+ </pattern>
+ </defs>
+ <rect width="100%" height="100%" fill="url(#grid)" />
+ 
+ {/* Roads */}
+ <path d="M -50 450 Q 200 400 400 250 T 850 150" fill="none" stroke="#1e293b" strokeWidth="32" strokeLinecap="round" />
+ <path d="M 200 -50 L 300 200 L 250 550" fill="none" stroke="#1e293b" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
+ <path d="M 850 400 L 500 350 L 400 250" fill="none" stroke="#1e293b" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
 
-  return (
-    <div className="min-h-screen bg-[#020617] text-slate-300 overflow-x-hidden font-sans relative selection:bg-blue-500/30 flex flex-col">
-      
-      {/* Background Texture & Circles */}
-      <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden">
-        {/* Subtle noise/texture */}
-        <div className="absolute inset-0 opacity-[0.2]" style={{ backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-        
-        {/* Concentric Dotted Circles */}
-        <div className="absolute w-[600px] h-[600px] border border-slate-700 border-dashed rounded-full opacity-50 animate-[spin_120s_linear_infinite]"></div>
-        <div className="absolute w-[900px] h-[900px] border border-slate-700 border-dashed rounded-full opacity-40 animate-[spin_150s_linear_infinite_reverse]"></div>
-        <div className="absolute w-[1200px] h-[1200px] border border-slate-700 border-dashed rounded-full opacity-30 animate-[spin_180s_linear_infinite]"></div>
-      </div>
+ {/* Road Centerlines */}
+ <path d="M -50 450 Q 200 400 400 250 T 850 150" fill="none" stroke="#0f172a" strokeWidth="2" strokeDasharray="10 10" />
+ <path d="M 200 -50 L 300 200 L 250 550" fill="none" stroke="#0f172a" strokeWidth="2" strokeDasharray="10 10" />
+ 
+ {/* Highlighted Trajectory */}
+ <path 
+ d="M 120 420 Q 200 400 300 310 L 400 250 L 500 350 L 650 370" 
+ fill="none" 
+ stroke="#3b82f6" 
+ strokeWidth="3" 
+ strokeDasharray="6 6" 
+ className="animate-[dash_20s_linear_infinite] opacity-70"
+ />
+ <style>{`
+ @keyframes dash {
+ to { stroke-dashoffset: -200; }
+ }
+ `}</style>
+ </svg>
 
-      <TopNav />
+ {/* Map Elements (Overlay) */}
+ 
+ {/* Camera 1 */}
+ <div className="absolute top-[400px] left-[150px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-10">
+ <div className="w-8 h-8 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center shadow-lg relative">
+ <Video className="w-3.5 h-3.5 text-slate-400" />
+ <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
+ </div>
+ <span className="text-[9px] font-bold text-slate-400 bg-slate-900/80 px-1.5 py-0.5 rounded ">CAM-01</span>
+ </div>
 
-      {/* Main Content Area */}
-      <main className="relative z-10 w-full max-w-[1400px] mx-auto min-h-[calc(100vh-100px)] flex flex-col items-center justify-center px-4 py-12 md:py-0">
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch w-full min-h-[600px] pb-[150px] lg:pb-[250px]">
-          
-          {/* Left: Title & Team */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left z-20 order-2 lg:order-1 justify-center py-4 lg:py-0 relative">
-            <div className="hidden lg:flex flex-1 w-full items-start justify-start pt-4">
-              {stickerCamera}
-            </div>
-            
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex-none py-4"
-            >
-              <h3 className="text-sm md:text-base font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">
-                TEAM INVARIANTS PRESENTS
-              </h3>
-              <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-none text-white drop-shadow-sm pb-2">
-                <span className="text-transparent bg-clip-text bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500">TRACE</span><br/>
-                360
-              </h1>
-            </motion.div>
-            
-            <div className="hidden lg:flex flex-1 w-full items-end justify-center pb-4 pl-12">
-              {stickerPlate}
-            </div>
-          </div>
+ {/* Camera 2 (Active/Intersection) */}
+ <div className="absolute top-[250px] left-[400px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-10">
+ <div className="w-10 h-10 bg-blue-900/40 border border-blue-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)] relative">
+ <Video className="w-4 h-4 text-blue-400" />
+ <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-400 rounded-full border-2 border-slate-900 shadow-[0_0_5px_rgba(96,165,250,0.8)]"></div>
+ </div>
+ <span className="text-[10px] font-bold text-blue-400 bg-slate-900/90 px-2 py-0.5 rounded border border-blue-900/50 shadow-md">CAM-02</span>
+ </div>
 
-          {/* Center: Device Mockup */}
-          <div className="relative flex justify-center items-center z-20 order-1 lg:order-2 h-[400px] md:h-[600px]">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, type: 'spring' }}
-              className="relative w-full max-w-[320px] md:max-w-[420px] lg:max-w-[500px] aspect-[4/3] bg-slate-900 rounded-2xl border-4 md:border-8 border-slate-800 shadow-2xl overflow-hidden flex flex-col group"
-            >
-              {/* Browser window header */}
-              <div className="h-6 md:h-8 bg-slate-800 flex items-center px-3 md:px-4 gap-1.5 shrink-0 border-b border-slate-700">
-                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-500"></div>
-                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-yellow-500"></div>
-                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-green-500"></div>
-                <div className="mx-auto bg-slate-700 rounded text-[10px] text-slate-400 px-4 py-0.5 font-mono hidden md:block">trace360.gov.in</div>
-              </div>
-              
-              {/* App Content */}
-              <div className="flex-1 relative bg-slate-100 overflow-hidden cursor-pointer" onClick={() => navigate('/dashboard')}>
-                {/* Mock Map Background */}
-                <div className="absolute inset-0 bg-[#e5e7eb] flex items-center justify-center overflow-hidden">
-                   {/* CSS Grid to simulate map roads */}
-                   <div className="absolute inset-0 opacity-20 bg-[linear-gradient(rgba(0,0,0,0.5)_2px,transparent_2px),linear-gradient(90deg,rgba(0,0,0,0.5)_2px,transparent_2px)] bg-[size:40px_40px]"></div>
-                   
-                   {/* Trajectory Mockup */}
-                   <svg className="absolute inset-0 w-full h-full" style={{ filter: 'drop-shadow(0 4px 6px rgba(59,130,246,0.3))' }}>
-                    <path 
-                      d="M 50,250 Q 150,150 250,200 T 400,100" 
-                      fill="transparent" 
-                      stroke="#3b82f6" 
-                      strokeWidth="4"
-                      strokeDasharray="8 8"
-                      className="animate-[dash_10s_linear_infinite]"
-                    />
-                  </svg>
-                  <div className="absolute top-[242px] left-[42px] w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-md"></div>
-                  <div className="absolute top-[92px] left-[392px] w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-md"></div>
-                </div>
+ {/* Camera 3 */}
+ <div className="absolute top-[350px] left-[500px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-10">
+ <div className="w-8 h-8 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center shadow-lg relative">
+ <Video className="w-3.5 h-3.5 text-slate-400" />
+ <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
+ </div>
+ <span className="text-[9px] font-bold text-slate-400 bg-slate-900/80 px-1.5 py-0.5 rounded ">CAM-03</span>
+ </div>
+ 
+ {/* Vehicle Marker 1 (Target) */}
+ <motion.div 
+ className="absolute z-20 flex items-center justify-center"
+ animate={{
+ x: ['120px', '200px', '300px', '400px', '500px', '650px'],
+ y: ['420px', '400px', '310px', '250px', '350px', '370px']
+ }}
+ transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+ style={{ x: '400px', y: '250px' }} // Initial fallback
+ >
+ <div className="relative">
+ {/* Reticle */}
+ <div className="absolute inset-[-12px] border border-cyan-400/60 bg-cyan-400/10 rounded-sm flex items-center justify-center">
+ <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-cyan-400"></div>
+ <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-cyan-400"></div>
+ <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-cyan-400"></div>
+ <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-cyan-400"></div>
+ </div>
+ {/* Car dot */}
+ <div className="w-4 h-4 bg-white rounded flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+ <div className="w-2 h-2 bg-blue-500 rounded-sm"></div>
+ </div>
+ {/* Tag */}
+ <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 -translate-y-3 whitespace-nowrap">
+ <div className="bg-slate-900 border border-cyan-800 rounded px-2 py-1 shadow-lg flex flex-col items-center">
+ <div className="text-cyan-400 font-mono font-bold text-[10px] leading-none mb-0.5">MH12AB1234</div>
+ <div className="text-slate-400 text-[8px] font-bold uppercase leading-none">Target Lock</div>
+ </div>
+ <div className="w-px h-3 bg-cyan-800 mx-auto"></div>
+ </div>
+ </div>
+ </motion.div>
 
-                {/* Floating UI Elements inside mockup */}
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur rounded-lg shadow-md p-2 w-32 border border-slate-200">
-                  <div className="w-full h-2 bg-slate-200 rounded mb-1"></div>
-                  <div className="w-2/3 h-2 bg-slate-200 rounded"></div>
-                </div>
-                <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur rounded-lg shadow-md p-3 w-40 border border-slate-200">
-                  <div className="flex items-end gap-1 h-12">
-                    <div className="w-1/4 h-full bg-blue-500 rounded-t"></div>
-                    <div className="w-1/4 h-2/3 bg-blue-400 rounded-t"></div>
-                    <div className="w-1/4 h-5/6 bg-blue-600 rounded-t"></div>
-                    <div className="w-1/4 h-1/2 bg-blue-300 rounded-t"></div>
-                  </div>
-                </div>
+ {/* Ambient Vehicles */}
+ <motion.div 
+ className="absolute z-10"
+ animate={{ x: ['300px', '250px'], y: ['200px', '550px'] }}
+ transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+ >
+ <div className="w-3 h-3 bg-slate-400 rounded-sm"></div>
+ </motion.div>
+ 
+ <motion.div 
+ className="absolute z-10"
+ animate={{ x: ['850px', '500px'], y: ['150px', '225px'] }}
+ transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+ >
+ <div className="w-3 h-3 bg-slate-500 rounded-sm"></div>
+ </motion.div>
 
-                {/* Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/10 group-hover:bg-slate-900/20 transition-colors">
-                  <div className="w-16 h-12 md:w-20 md:h-14 bg-red-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-red-500 transition-all">
-                    <Play className="text-white fill-white w-6 h-6 md:w-8 md:h-8" />
-                  </div>
-                </div>
+ {/* Inset CCTV Feed Panel */}
+ <div className="absolute bottom-4 right-4 w-[220px] md:w-[280px] bg-slate-900/90 border border-slate-700 rounded-lg shadow-2xl overflow-hidden z-30">
+ <div className="bg-slate-800 px-3 py-1.5 flex justify-between items-center border-b border-slate-700">
+ <span className="text-[10px] font-bold text-slate-300 flex items-center gap-1.5">
+ <Radio size={10} className="text-red-400 animate-pulse" /> CAM-02 FEED
+ </span>
+ <span className="text-[9px] font-mono text-slate-400">14:32:05</span>
+ </div>
+ <div className="relative aspect-video bg-slate-900 overflow-hidden">
+ {/* Mock image content (simulated with CSS for now or use a placeholder) */}
+ <img src="/dummy.jpg" alt="CCTV Feed" className="w-full h-full object-cover opacity-60 grayscale-[20%]" />
+ 
+ {/* ANPR Overlay Box on Image */}
+ <div className="absolute top-[40%] left-[35%] w-[30%] h-[20%] border-2 border-cyan-400 bg-cyan-400/20 flex items-end justify-center pb-0.5">
+ <div className="bg-cyan-400 text-black font-mono font-bold text-[8px] md:text-[10px] px-1 transform translate-y-full">MH12AB1234</div>
+ </div>
+ 
+ {/* Feed stats */}
+ <div className="absolute top-2 left-2 flex flex-col gap-1">
+ <span className="bg-black/60 text-white text-[8px] px-1 rounded ">1080P • 30FPS</span>
+ </div>
+ <div className="absolute bottom-2 right-2">
+ <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ">
+ <CheckCircle2 size={8} /> MATCH: 98.4%
+ </span>
+ </div>
+ </div>
+ </div>
 
-                {/* Bottom Bar Info */}
-                <div className="absolute bottom-0 inset-x-0 bg-slate-900/80 backdrop-blur-md p-3">
-                  <p className="text-white text-xs md:text-sm font-medium">Pune City Traffic Network is currently tracking <span className="text-cyan-400 font-bold">14,302</span> vehicles.</p>
-                </div>
-              </div>
-            </motion.div>
+ {/* Bottom Status Bar */}
+ <div className="absolute bottom-0 left-0 w-full bg-slate-800/95 border-t border-slate-800 p-2 md:px-4 md:py-2 flex justify-between items-center z-30">
+ <div className="flex items-center gap-4 md:gap-6">
+ <div className="flex flex-col">
+ <span className="text-[8px] text-slate-500 font-bold uppercase">System Status</span>
+ <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">OPTIMAL <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div></span>
+ </div>
+ <div className="hidden md:flex flex-col">
+ <span className="text-[8px] text-slate-500 font-bold uppercase">Avg Latency</span>
+ <span className="text-[10px] text-slate-300 font-bold font-mono">18ms</span>
+ </div>
+ <div className="hidden sm:flex flex-col">
+ <span className="text-[8px] text-slate-500 font-bold uppercase">Processing Rate</span>
+ <span className="text-[10px] text-slate-300 font-bold font-mono">142 frames/s</span>
+ </div>
+ </div>
+ 
+ <div className="flex items-center gap-2">
+ <AlertCircle size={12} className="text-amber-500" />
+ <span className="text-[10px] text-amber-500 font-bold">0 ALERT QUEUE</span>
+ </div>
+ </div>
 
-            {/* Hand-drawn arrow (SVG) */}
-            <div className="absolute -bottom-12 right-12 md:-bottom-16 md:right-0 lg:-bottom-20 lg:-right-16 z-30 flex flex-col items-center">
-              <svg className="w-16 h-16 md:w-24 md:h-24 text-red-500 -rotate-12" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M 20 80 Q 50 20 80 40" />
-                <path d="M 80 40 L 70 25 M 80 40 L 60 45" />
-              </svg>
-              <span className="font-['Comic_Sans_MS',cursive] text-red-500 font-bold text-lg md:text-xl -rotate-12 drop-shadow-sm mt-[-10px] ml-12">
-                check out<br/>live dashboard!
-              </span>
-            </div>
-          </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-          {/* Right: Description */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left z-40 order-3 p-4 justify-center relative">
-            <div className="hidden lg:flex flex-1 w-full items-start justify-end pt-4 pr-8">
-              {stickerAnalytics}
-            </div>
-            
-            <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex-none py-4"
-            >
-              <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed max-w-md">
-                Our urban mobility faces the constant threat of congestion and crime. We introduce TRACE360, it secures 
-                the city using accurate AI models. It offers 
-                immersive on-site trajectory tracking and traffic analytics, truly 
-                "bringing city-wide intelligence to life forever".
-              </p>
-            </motion.div>
-            
-            <div className="hidden lg:flex flex-1 w-full items-end justify-start pb-4 pl-8">
-              {stickerTracking}
-            </div>
-          </div>
-        </div>
+ {/* Compact Statistics Section */}
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-16 relative z-20">
+ <StatCard title="Cameras Online" value="1,284" sub="98.7% Operational Coverage" icon={<Camera className="w-5 h-5 text-blue-400" />} />
+ <StatCard title="Vehicles Tracked" value={vehiclesTracked.toLocaleString()} sub="Updated in real-time" icon={<Activity className="w-5 h-5 text-emerald-400" />} />
+ <StatCard title="Active Alerts" value="14" sub="3 High priority" icon={<AlertTriangle className="w-5 h-5 text-amber-400" />} />
+ <StatCard title="Traffic Zones" value="18" sub="All sectors online" icon={<MapPin className="w-5 h-5 text-purple-400" />} />
+ </div>
 
-        {/* Mobile/Tablet Stickers Row */}
-        <div className="flex lg:hidden flex-wrap justify-center items-center gap-4 mt-8 w-full order-4 z-30 px-4 pb-12">
-          {stickerCamera}
-          {stickerPlate}
-          {stickerAnalytics}
-          {stickerTracking}
-          <Sticker className="rotate-[15deg] hover:rotate-0">
-            <Car size={32} className="text-emerald-400" />
-          </Sticker>
-        </div>
-
-      </main>
-
-      <style>{`
-        @keyframes dash {
-          to { stroke-dashoffset: -100; }
-        }
-      `}</style>
-    </div>
-  );
+ </main>
+ </div>
+ );
 }
 
-// Sticker Component
-function Sticker({ children, className }: { children: React.ReactNode, className: string }) {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.1, rotate: 0 }}
-      transition={{ duration: 0.5, type: 'spring', bounce: 0.5 }}
-      className={`relative z-30 inline-flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur p-3 md:p-4 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] border-[2px] border-slate-700 cursor-pointer ${className}`}
-      onClick={() => window.location.href = '/dashboard'}
-    >
-      {children}
-    </motion.div>
-  );
+// Sub-components
+function StatCard({ title, value, sub, icon }: { title: string, value: string | number, sub: string, icon: React.ReactNode }) {
+ return (
+ <div className="bg-slate-800 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between group hover:border-slate-700 transition-colors">
+ <div className="flex justify-between items-start mb-4">
+ <h3 className="text-slate-400 text-sm font-semibold">{title}</h3>
+ <div className="p-2 bg-slate-800/50 rounded-lg group-hover:bg-slate-800 transition-colors">
+ {icon}
+ </div>
+ </div>
+ <div>
+ <div className="text-3xl font-black text-white mb-1 tracking-tight font-mono">{value}</div>
+ <div className="text-xs font-medium text-slate-500">{sub}</div>
+ </div>
+ </div>
+ );
 }

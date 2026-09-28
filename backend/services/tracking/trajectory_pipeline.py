@@ -1,9 +1,10 @@
 import logging
 import json
+from typing import List, Dict, Any, Tuple, Optional
 
 from .candidate_retrieval import CandidateRetrievalService
 from .vehicle_reid import VehicleReIDService
-from .physics_filter import PhysicsFilterService
+from .physics_filter import PhysicsFilterService, haversine_distance, format_travel_time
 from .trajectory_smoothing import TrajectorySmoothingService
 from services.map_matching import route_matcher
 
@@ -15,116 +16,144 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# Distinct colors cycled per segment when debug-plotting — makes it easy to
-# spot visually if any single camera-to-camera hop is routing incorrectly.
 SEGMENT_DEBUG_COLORS = [
     "green", "blue", "purple", "orange", "darkred",
     "cadetblue", "darkgreen", "black", "pink", "darkblue",
 ]
 
-
 class TrajectoryPipeline:
-    def __init__(self):
-        # Initialize all 5 stages of the pipeline
+    """
+    Complete Multi-Camera Vehicle Trajectory Tracking Pipeline for Problem 2.
+    
+    Includes:
+    1. Fuzzy candidate retrieval (OCR error matching)
+    2. Haversine geographic distance calculation
+    3. Travel-time & estimated speed calculation
+    4. Spatio-temporal validation (flagging invalid/suspicious transitions)
+    5. 4D Kalman Filter trajectory smoothing & state estimation
+    """
+    def __init__(self, max_speed_kmh: float = 120.0):
         self.retrieval = CandidateRetrievalService(threshold=85)
         self.reid = VehicleReIDService()
-        self.physics = PhysicsFilterService(max_speed_kmh=120)
+        self.physics = PhysicsFilterService(max_speed_kmh=max_speed_kmh)
         self.smoother = TrajectorySmoothingService(dt=1.0)
         self.map_matcher = route_matcher
 
-    def reconstruct_trajectory(self, target_plate: str, historical_detections: list, vehicle_image=None):
+    def reconstruct_trajectory(
+        self,
+        target_plate: str,
+        historical_detections: List[Dict[str, Any]],
+        vehicle_image=None
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         """
-        Reconstructs a vehicle's route across multiple cameras.
-        historical_detections: list of dicts with
-            'plate_number', 'camera_id', 'timestamp', 'lat', 'lon', 'image_crop'
+        Reconstructs a vehicle's route across multiple camera detections.
         """
         logger.info(f"Starting trajectory reconstruction for {target_plate}")
 
-        # Stage 1: Candidate Retrieval (Fuzzy matching for OCR errors)
+        # Step 1: Candidate Retrieval
         candidates = self.retrieval.find_candidates(target_plate, historical_detections)
         if not candidates:
-            return None, "No candidates found"
+            return None, f"No detections found for plate {target_plate}"
 
-        # Sort chronologically for physics filter
-        candidates.sort(key=lambda x: x['timestamp'])
+        # Sort chronologically by timestamp
+        from .physics_filter import parse_timestamp
+        candidates.sort(key=lambda x: parse_timestamp(x.get('timestamp', '00:00:00')))
 
-        valid_matches = []
+        # Step 2: Transitions & Spatio-Temporal Validation
+        transitions = []
+        valid_count = 0
+        suspicious_count = 0
+        total_distance_km = 0.0
+        total_time_seconds = 0.0
 
-        # Stage 2 & 3: Re-ID & Physics Filter
-        for i, curr in enumerate(candidates):
-            if i == 0:
-                # First detection is assumed valid for base of trajectory
-                valid_matches.append(curr)
-                continue
+        for i in range(1, len(candidates)):
+            prev = candidates[i - 1]
+            curr = candidates[i]
 
-            prev = valid_matches[-1]
+            prev_cam = prev.get('camera_id') or prev.get('cameraId') or f"CAM_{i}"
+            curr_cam = curr.get('camera_id') or curr.get('cameraId') or f"CAM_{i+1}"
 
-            # Stage 3: Physics Filter (Is it possible to travel this distance in this time?)
-            is_valid_physics, speed = self.physics.is_physically_possible(
-                (prev['lat'], prev['lon']), prev['timestamp'],
-                (curr['lat'], curr['lon']), curr['timestamp']
+            prev_loc = (
+                float(prev.get('lat') if 'lat' in prev else prev.get('latitude', 0.0)),
+                float(prev.get('lon') if 'lon' in prev else prev.get('longitude', 0.0))
+            )
+            curr_loc = (
+                float(curr.get('lat') if 'lat' in curr else curr.get('latitude', 0.0)),
+                float(curr.get('lon') if 'lon' in curr else curr.get('longitude', 0.0))
             )
 
-            if not is_valid_physics:
-                logger.info(f"Rejected match due to physics violation (Implied speed: {speed} km/h)")
-                continue
+            validation = self.physics.validate_transition(
+                prev_cam, prev_loc, prev['timestamp'],
+                curr_cam, curr_loc, curr['timestamp']
+            )
 
-            # Stage 2: Re-ID Filter (Do the vehicles visually match?)
-            if vehicle_image is not None and 'image_crop' in curr and curr['image_crop'] is not None:
-                sim_score = self.reid.similarity_score(vehicle_image, curr['image_crop'])
-                if sim_score < 0.80:
-                    logger.info(f"Rejected match due to low Re-ID score ({sim_score})")
-                    continue
+            transitions.append(validation)
+            total_distance_km += validation['distance_km']
+            total_time_seconds += max(0.0, validation['travel_time_seconds'])
 
-            valid_matches.append(curr)
+            if validation['status'] == 'VALID':
+                valid_count += 1
+            else:
+                suspicious_count += 1
 
-        if len(valid_matches) < 2:
-            return valid_matches, "Insufficient valid points to reconstruct a trajectory"
+        # Step 3: Kalman Filtering (State estimation: pos & velocity)
+        kalman_detections = self.smoother.process_detections_kalman(candidates)
 
-        # Stage 4: Road Graph Matching (Snap to OSM roads segment-by-segment)
-        coordinates = [{'lat': c['lat'], 'lon': c['lon']} for c in valid_matches]
-        road_match_result = self.map_matcher.get_route(coordinates)
-        road_matched_path = road_match_result["path"]
-        road_matched_segments = road_match_result["segments"]  # one list per camera-to-camera hop
+        # Attach transition speeds back to kalman detections if available
+        for i, k_det in enumerate(kalman_detections):
+            if i > 0 and i - 1 < len(transitions):
+                k_det['estimated_speed_kmh'] = transitions[i - 1]['estimated_speed_kmh']
+                k_det['transition_status'] = transitions[i - 1]['status']
 
-        # Stage 5: Trajectory Smoothing (Kalman Filter to remove jitters)
-        final_smoothed_path = self.smoother.smooth_trajectory(road_matched_path)
+        # Step 4: Map Matching (Road graph snapping)
+        coordinates = [
+            {'lat': k['filtered_latitude'], 'lon': k['filtered_longitude']}
+            for k in kalman_detections
+        ]
+        
+        road_matched_path = []
+        road_matched_segments = []
+        if len(coordinates) >= 2:
+            try:
+                road_match_result = self.map_matcher.get_route(coordinates)
+                road_matched_path = road_match_result.get("path", [])
+                road_matched_segments = road_match_result.get("segments", [])
+            except Exception as e:
+                logger.warning(f"Map matching failed: {e}")
+                road_matched_path = [[c['lat'], c['lon']] for c in coordinates]
+        else:
+            road_matched_path = [[c['lat'], c['lon']] for c in coordinates]
 
-        return {
-            "valid_detections": valid_matches,
+        overall_status = "VALID" if suspicious_count == 0 else "SUSPICIOUS"
+
+        result = {
+            "plate_text": target_plate.upper(),
+            "description": "Trajectory smoothing and state estimation from noisy multi-camera observations.",
+            "detections": kalman_detections,
+            "transitions": transitions,
+            "summary": {
+                "total_distance_km": round(total_distance_km, 2),
+                "total_travel_time_seconds": round(total_time_seconds, 1),
+                "total_travel_time_formatted": format_travel_time(total_time_seconds),
+                "overall_status": overall_status,
+                "valid_transitions_count": valid_count,
+                "suspicious_transitions_count": suspicious_count
+            },
             "road_matched_path": road_matched_path,
             "road_matched_segments": road_matched_segments,
-            "smoothed_path": final_smoothed_path,
-        }, None
+            "smoothed_path": [[k['filtered_latitude'], k['filtered_longitude']] for k in kalman_detections]
+        }
 
-    def plot_trajectory(self, route_coords, camera_points, output_file='trajectory_output.html',
-                         segments=None, debug=False):
-        """
-        Generates a Leaflet/Folium interactive map of the final trajectory.
+        return result, None
 
-        route_coords: the final path to draw as the primary trajectory line
-        camera_points: confirmed camera detections to mark on the map
-        segments: optional list of per-hop paths (from road_matched_segments).
-                  When provided with debug=True, each hop is drawn in its own
-                  color so you can visually confirm every segment follows the
-                  correct road, instead of one solid line that hides which
-                  hop (if any) is routing incorrectly.
-        debug: if True and segments is provided, draw color-coded segments
-               instead of a single solid polyline.
-        """
-        if not FOLIUM_AVAILABLE:
-            logger.warning("Folium not installed. Cannot generate HTML map.")
-            return False
-
-        if not route_coords:
+    def plot_trajectory(self, route_coords, camera_points, output_file='trajectory_output.html', segments=None, debug=False):
+        if not FOLIUM_AVAILABLE or not route_coords:
             return False
 
         start_loc = route_coords[0]
         m = folium.Map(location=[start_loc[0], start_loc[1]], zoom_start=13, tiles='OpenStreetMap')
 
         if debug and segments:
-            # Draw each camera-to-camera hop in a distinct color so a
-            # misrouted segment is immediately visible on the map.
             for i, seg in enumerate(segments):
                 if not seg:
                     continue
@@ -134,13 +163,13 @@ class TrajectoryPipeline:
                     tooltip=f"Segment {i + 1} ({len(seg)} points)"
                 ).add_to(m)
         else:
-            # Normal mode: single solid line for the final trajectory
             folium.PolyLine(route_coords, color='green', weight=4, opacity=0.8).add_to(m)
 
-        # Plot actual camera detection points
         for idx, cam in enumerate(camera_points):
+            lat = cam.get('lat') if 'lat' in cam else cam.get('latitude', 0.0)
+            lon = cam.get('lon') if 'lon' in cam else cam.get('longitude', 0.0)
             folium.CircleMarker(
-                location=(cam['lat'], cam['lon']),
+                location=(lat, lon),
                 radius=7, color='blue', fill=True, fill_color='blue', fill_opacity=1.0,
                 popup=f"{cam.get('camera_id', f'Cam {idx}')} — {cam.get('timestamp', '')}"
             ).add_to(m)

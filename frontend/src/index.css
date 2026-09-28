@@ -1,33 +1,64 @@
 @import "tailwindcss";
 
 @theme {
-  --color-sidebar-bg: #0b1121;
-  --color-sidebar-panel: #111827;
-  --color-sidebar-border: #1f2937;
-  --color-sidebar-text: #9ca3af;
-  --color-sidebar-text-active: #ffffff;
-  --color-sidebar-accent: #3b82f6;
+  /* Slate Palette overrides (Deep Teal / Slate Teal) */
+  --color-slate-50: #F3F5F5;
+  --color-slate-100: #E5E7E6;
+  --color-slate-200: #C2C9CA;
+  --color-slate-300: #9EB0B3;
+  --color-slate-400: #8BADC1;
+  --color-slate-500: #557985;
+  --color-slate-600: #39636C;
+  --color-slate-700: #2A5C66;
+  --color-slate-800: #1E4A52; /* Cards/Panels */
+  --color-slate-900: #12343B; /* Main background */
+  --color-slate-950: #0B2227;
+
+  /* Blue Palette overrides (Muted Blue) */
+  --color-blue-400: #7DA6F2;
+  --color-blue-500: #5B8DEF; /* Secondary Accent */
+  --color-blue-600: #3F75E0;
+  --color-blue-900: #1A3978;
+
+  /* Cyan Palette overrides (Turquoise) */
+  --color-cyan-400: #49C7C1;
+  --color-cyan-500: #35B7B0; /* Primary Accent */
+  --color-cyan-600: #28938D;
+  --color-cyan-800: #165350;
+
+  /* Emerald Palette overrides (Green) */
+  --color-emerald-400: #6AD19A;
+  --color-emerald-500: #52C788; /* Success/Live */
+  --color-emerald-600: #3EAC71;
+  
+  /* Amber/Red Palette overrides (Muted Orange-Red) */
+  --color-amber-400: #ED9275;
+  --color-amber-500: #E87855; /* Alerts/Warnings */
+  --color-red-400: #ED9275;
+  --color-red-500: #E87855; /* Alerts/Warnings */
+  --color-red-600: #C75B3A;
+
+  /* Shared Application Variables */
+  --color-sidebar-bg: var(--color-slate-900);
+  --color-sidebar-panel: var(--color-slate-800);
+  --color-sidebar-border: var(--color-slate-700);
+  --color-sidebar-text: var(--color-slate-400);
+  --color-sidebar-text-active: var(--color-slate-100);
+  --color-sidebar-accent: var(--color-cyan-500);
 
   /* Dark Theme Colors */
-  --color-dark-bg: #080d19;
-  --color-dark-panel: #111827;
-  --color-dark-border: #1f2937;
-  --color-dark-text-primary: #f3f4f6;
-  --color-dark-text-secondary: #9ca3af;
-
-  /* Light Theme Colors */
-  --color-light-bg: #f3f4f6;
-  --color-light-panel: #ffffff;
-  --color-light-border: #e5e7eb;
-  --color-light-text-primary: #111827;
-  --color-light-text-secondary: #6b7280;
+  --color-dark-bg: var(--color-slate-900);
+  --color-dark-panel: var(--color-slate-800);
+  --color-dark-border: var(--color-slate-700);
+  --color-dark-text-primary: var(--color-slate-100);
+  --color-dark-text-secondary: var(--color-slate-400);
 
   /* Shared Accents */
-  --color-accent-blue: #3b82f6;
-  --color-accent-blue-hover: #2563eb;
-  --color-status-success: #22c55e;
-  --color-status-danger: #ef4444;
-  --color-status-warning: #f59e0b;
+  --color-accent-blue: var(--color-cyan-500);
+  --color-accent-blue-hover: var(--color-cyan-600);
+  --color-status-success: var(--color-emerald-500);
+  --color-status-danger: var(--color-red-500);
+  --color-status-warning: var(--color-amber-500);
 }
 
 @layer base {

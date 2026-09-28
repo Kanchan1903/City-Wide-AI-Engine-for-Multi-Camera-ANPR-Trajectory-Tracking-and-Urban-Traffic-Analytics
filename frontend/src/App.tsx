@@ -15,47 +15,47 @@ import { AuthProvider } from './context/AuthContext';
 import { useStore } from './store/store';
 
 function App() {
-  const simulateTick = useStore((state) => state.simulateTick);
-  const demoModeActive = useStore((state) => state.demoModeActive);
+ const simulateTick = useStore((state) => state.simulateTick);
+ const demoModeActive = useStore((state) => state.demoModeActive);
 
-  useEffect(() => {
-    if (!demoModeActive) return;
-    
-    const interval = setInterval(() => {
-      simulateTick();
-    }, 3000); // Tick every 3 seconds for demo mode
-    return () => clearInterval(interval);
-  }, [simulateTick, demoModeActive]);
+ useEffect(() => {
+ if (!demoModeActive) return;
+ 
+ const interval = setInterval(() => {
+ simulateTick();
+ }, 3000); // Tick every 3 seconds for demo mode
+ return () => clearInterval(interval);
+ }, [simulateTick, demoModeActive]);
 
-  return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Login Page is root */}
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="/landing" element={<LandingPage />} />
-          
-          {/* Command Center routes inside Layout */}
-          <Route path="/dashboard" element={<Layout />}>
-            <Route index element={<DashboardView />} />
-            <Route path="cameras" element={<CameraNetworkView />} />
-            <Route path="search" element={<ANPRSearch />} />
-            <Route path="anpr" element={<ANPRDemo />} />
-            <Route path="tracking" element={<VehicleRoutes />} />
-            <Route path="analytics" element={<TrafficAnalytics />} />
-            <Route path="alerts" element={<AlertsView />} />
-            <Route path="reports" element={<ReportsView />} />
-            <Route path="settings" element={<div className="p-6 text-xl text-slate-500 font-medium">System Settings Under Construction</div>} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Route>
+ return (
+ <AuthProvider>
+ <Router>
+ <Routes>
+ {/* Login Page is root */}
+ <Route path="/" element={<LoginPage />} />
+ <Route path="/login" element={<Navigate to="/" replace />} />
+ <Route path="/landing" element={<LandingPage />} />
+ 
+ {/* Command Center routes inside Layout */}
+ <Route path="/dashboard" element={<Layout />}>
+ <Route index element={<DashboardView />} />
+ <Route path="cameras" element={<CameraNetworkView />} />
+ <Route path="search" element={<ANPRSearch />} />
+ <Route path="anpr" element={<ANPRDemo />} />
+ <Route path="tracking" element={<VehicleRoutes />} />
+ <Route path="analytics" element={<TrafficAnalytics />} />
+ <Route path="alerts" element={<AlertsView />} />
+ <Route path="reports" element={<ReportsView />} />
+ <Route path="settings" element={<div className="p-6 text-xl text-slate-500 font-medium">System Settings Under Construction</div>} />
+ <Route path="*" element={<Navigate to="/dashboard" replace />} />
+ </Route>
 
-          {/* Global Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
-  );
+ {/* Global Catch-all */}
+ <Route path="*" element={<Navigate to="/" replace />} />
+ </Routes>
+ </Router>
+ </AuthProvider>
+ );
 }
 
 export default App;
