@@ -103,9 +103,9 @@ const initialVehicles: Record<string, Vehicle> = {
 const initialDetections: Detection[] = [
   // MH12AB1234 (Route: CAM_001 -> CAM_002 -> CAM_003 -> CAM_004)
   { id: 'd1', plate: 'MH12AB1234', cameraId: 'CAM_001', location: 'Hinjawadi', latitude: 18.559, longitude: 73.786, timestamp: '10:00:12', vehicleType: 'Car', vehicleColor: 'White', confidence: 0.96, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
-  { id: 'd2', plate: 'MH12AB123A', cameraId: 'CAM_002', location: 'Shivajinagar', latitude: 18.525, longitude: 73.855, timestamp: '10:05:14', vehicleType: 'Car', vehicleColor: 'Silver', confidence: 0.73, direction: 'Eastbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
+  { id: 'd2', plate: 'MH12AB123A', cameraId: 'CAM_002', location: 'Shivajinagar', latitude: 18.525, longitude: 73.855, timestamp: '10:05:14', vehicleType: 'Car', vehicleColor: 'White', confidence: 0.73, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
   { id: 'd3', plate: 'MH12AB1234', cameraId: 'CAM_003', location: 'JM Road', latitude: 18.527, longitude: 73.858, timestamp: '10:12:30', vehicleType: 'Car', vehicleColor: 'White', confidence: 0.91, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
-  { id: 'd4', plate: 'MH12ABI234', cameraId: 'CAM_004', location: 'Wagholi', latitude: 18.580, longitude: 73.978, timestamp: '10:18:45', vehicleType: 'SUV', vehicleColor: 'Black', confidence: 0.89, direction: 'Eastbound', plateImg: '/plate_dl8c.png', vehicleImg: '/veh_dl8c.png' },
+  { id: 'd4', plate: 'MH12ABI234', cameraId: 'CAM_004', location: 'Wagholi', latitude: 18.580, longitude: 73.978, timestamp: '10:18:45', vehicleType: 'Car', vehicleColor: 'White', confidence: 0.89, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
 
   // MH14XY9999 (Route: CAM_006 -> CAM_003 -> CAM_002)
   { id: 'd5', plate: 'MH14XY9999', cameraId: 'CAM_006', location: 'Swargate', latitude: 18.501, longitude: 73.859, timestamp: '08:15:00', vehicleType: 'Car', vehicleColor: 'Silver', confidence: 0.94, direction: 'Northbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
