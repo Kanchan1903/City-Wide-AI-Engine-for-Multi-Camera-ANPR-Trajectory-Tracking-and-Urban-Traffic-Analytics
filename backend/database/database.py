@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./sih_anpr.db")
+if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     engine = create_engine(

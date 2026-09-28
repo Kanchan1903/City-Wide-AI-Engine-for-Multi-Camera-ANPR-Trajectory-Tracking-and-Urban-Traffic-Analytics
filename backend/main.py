@@ -23,6 +23,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.on_event("startup")
+def startup_event():
+    try:
+        from database.database import engine, Base
+        import models.all_models
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables initialized successfully.")
+    except Exception as e:
+        logger.error(f"Error initializing database tables: {e}")
+
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
