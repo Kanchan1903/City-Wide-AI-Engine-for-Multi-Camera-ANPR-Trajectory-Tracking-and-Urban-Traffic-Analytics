@@ -1,9 +1,43 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/store';
-import { Search, Filter, Calendar, Clock, Camera, ChevronRight, X } from 'lucide-react';
+import { getEditDistance } from '../utils/trajectory';
+import { Search, Filter, Calendar, Clock, Camera, ChevronRight, X, AlertTriangle, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+
+// OCR Canonicalizer for fuzzy OCR character equivalence (A<->3, I<->1, B<->8, O<->0, S<->5, Z<->2)
+function toCanonicalPlate(plate: string): string {
+  return plate
+    .toUpperCase()
+    .replace(/3/g, 'A')
+    .replace(/1/g, 'I')
+    .replace(/8/g, 'B')
+    .replace(/0/g, 'O')
+    .replace(/5/g, 'S')
+    .replace(/2/g, 'Z');
+}
+
+function arePlatesFuzzyEqual(p1: string, p2: string): boolean {
+  if (!p1 || !p2) return false;
+  if (p1 === p2) return true;
+  const c1 = toCanonicalPlate(p1);
+  const c2 = toCanonicalPlate(p2);
+  if (c1 === c2) return true;
+  return getEditDistance(c1, c2) <= 1 || getEditDistance(p1, p2) <= 1;
+}
+
+interface VehicleGroup {
+  primaryPlate: string;
+  displayPlate: string;
+  ocrVariants: string[];
+  detections: ReturnType<typeof useStore.getState>['detections'];
+  latestDetection: ReturnType<typeof useStore.getState>['detections'][0];
+  maxConfidence: number;
+  status: 'VERIFIED' | 'NEEDS_REVIEW' | 'BLACKLISTED';
+  statusLabel: string;
+}
 
 export default function ANPRSearch() {
   const { detections, cameras } = useStore();
@@ -11,21 +45,26 @@ export default function ANPRSearch() {
   const [dateFilter, setDateFilter] = useState('All');
   const [timeFilter, setTimeFilter] = useState('All');
   const [cameraFilter, setCameraFilter] = useState('All');
+  const [expandedPlate, setExpandedPlate] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Filter detections based on search term, date, time window, and camera ID
+  // 1. Filter detections based on search term, date, time window, and camera ID
   const filteredDetections = detections.filter(d => {
-    // 1. Search term (plate number matching)
-    if (searchTerm.trim() && !d.plate.toLowerCase().includes(searchTerm.trim().toLowerCase())) {
-      return false;
+    // Search term matching (fuzzy or partial substring match)
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toUpperCase();
+      const p = d.plate.toUpperCase();
+      const matchesDirect = p.includes(q);
+      const matchesFuzzy = arePlatesFuzzyEqual(p, q);
+      if (!matchesDirect && !matchesFuzzy) return false;
     }
 
-    // 2. Camera filter
+    // Camera filter
     if (cameraFilter !== 'All' && cameraFilter !== 'All Cameras' && d.cameraId !== cameraFilter) {
       return false;
     }
 
-    // 3. Time filter (Morning: 06:00-12:00, Evening: 16:00-22:00)
+    // Time filter (Morning: 06:00-12:00, Evening: 16:00-22:00)
     if (timeFilter === 'Morning (06-12)') {
       const hour = parseInt(d.timestamp.split(':')[0], 10);
       if (isNaN(hour) || hour < 6 || hour >= 12) return false;
@@ -34,7 +73,7 @@ export default function ANPRSearch() {
       if (isNaN(hour) || hour < 16 || hour >= 22) return false;
     }
 
-    // 4. Date filter (Mock filtering: 'Today' matches timestamps from 10:00 onwards, 'Yesterday' matches 08:00-09:59)
+    // Date filter
     if (dateFilter === 'Today') {
       const hour = parseInt(d.timestamp.split(':')[0], 10);
       if (!isNaN(hour) && hour < 10) return false;
@@ -46,14 +85,63 @@ export default function ANPRSearch() {
     return true;
   });
 
-  // Group filtered detections by plate to show unique vehicles
-  const grouped = filteredDetections.reduce((acc, curr) => {
-    if (!acc[curr.plate]) acc[curr.plate] = [];
-    acc[curr.plate].push(curr);
-    return acc;
-  }, {} as Record<string, typeof detections>);
+  // 2. Fuzzy Grouping & Deduplication of Plate Readings
+  const vehicleGroups: VehicleGroup[] = [];
 
-  const uniquePlates = Object.keys(grouped);
+  filteredDetections.forEach(det => {
+    // Check if det matches an existing group fuzzy-wise
+    let matchedGroup = vehicleGroups.find(g => arePlatesFuzzyEqual(g.primaryPlate, det.plate));
+
+    if (!matchedGroup) {
+      const isBlacklisted = det.plate === 'MH14XY9999';
+      const isLowConf = det.confidence < 0.55 || det.plate.startsWith('UNCLEAR');
+
+      let status: 'VERIFIED' | 'NEEDS_REVIEW' | 'BLACKLISTED' = 'VERIFIED';
+      let statusLabel = 'High Confidence';
+
+      if (isBlacklisted) {
+        status = 'BLACKLISTED';
+        statusLabel = 'ALERT: Blacklisted Vehicle';
+      } else if (isLowConf) {
+        status = 'NEEDS_REVIEW';
+        statusLabel = 'Needs Review (Low Confidence)';
+      }
+
+      matchedGroup = {
+        primaryPlate: det.plate,
+        displayPlate: det.plate.startsWith('UNCLEAR') ? 'Unclear Plate' : det.plate,
+        ocrVariants: [],
+        detections: [det],
+        latestDetection: det,
+        maxConfidence: det.confidence,
+        status,
+        statusLabel
+      };
+      vehicleGroups.push(matchedGroup);
+    } else {
+      matchedGroup.detections.push(det);
+
+      // Track OCR variants if different from primary
+      if (det.plate !== matchedGroup.primaryPlate && !matchedGroup.ocrVariants.includes(det.plate)) {
+        matchedGroup.ocrVariants.push(det.plate);
+      }
+
+      // Keep plate with highest confidence as primary
+      if (det.confidence > matchedGroup.maxConfidence && !det.plate.startsWith('UNCLEAR')) {
+        if (!matchedGroup.ocrVariants.includes(matchedGroup.primaryPlate) && matchedGroup.primaryPlate !== det.plate) {
+          matchedGroup.ocrVariants.push(matchedGroup.primaryPlate);
+        }
+        matchedGroup.primaryPlate = det.plate;
+        matchedGroup.displayPlate = det.plate;
+        matchedGroup.maxConfidence = det.confidence;
+      }
+
+      // Update latest detection if timestamp is more recent
+      if (det.timestamp.localeCompare(matchedGroup.latestDetection.timestamp) > 0) {
+        matchedGroup.latestDetection = det;
+      }
+    }
+  });
 
   const resetFilters = () => {
     setSearchTerm('');
@@ -154,66 +242,124 @@ export default function ANPRSearch() {
       <div className="flex-1 overflow-y-auto custom-scrollbar pb-6">
         <div className="flex items-end gap-3 mb-4 pb-2 border-b border-slate-800/50">
           <h3 className="text-[16px] font-black text-white uppercase tracking-wider leading-none">Search Results</h3>
-          <span className="text-sm font-bold text-blue-400 leading-none">{uniquePlates.length} vehicles found</span>
+          <span className="text-sm font-bold text-blue-400 leading-none">{vehicleGroups.length} unique vehicles found</span>
         </div>
         
         <div className="space-y-4">
-          {uniquePlates.map(plate => {
-            const latest = grouped[plate].sort((a,b) => b.timestamp.localeCompare(a.timestamp))[0];
+          {vehicleGroups.map(group => {
+            const latest = group.latestDetection;
             const cam = cameras.find(c => c.id === latest.cameraId);
+            const isExpanded = expandedPlate === group.primaryPlate;
 
             return (
               <Card 
                 variant="glass"
-                key={plate} 
-                className="p-3 hover:border-[#1769FF]/50 transition-all cursor-pointer group flex flex-col md:flex-row gap-4 items-center h-auto md:h-[120px]"
-                onClick={() => navigate(`/dashboard/tracking?plate=${plate}`)}
+                key={group.primaryPlate} 
+                className="p-4 hover:border-[#1769FF]/50 transition-all group flex flex-col gap-3"
               >
-                {/* Images */}
-                <div className="flex gap-[10px] shrink-0">
-                  <img 
-                    src={latest.vehicleImg} 
-                    alt="Vehicle" 
-                    className="w-[110px] h-[80px] object-cover rounded-lg border border-slate-700/50 bg-slate-900 shadow-sm" 
-                  />
-                  <img 
-                    src={latest.plateImg} 
-                    alt="Plate crop" 
-                    className="w-[90px] h-[80px] object-cover rounded-lg border border-slate-700/50 bg-slate-900 shadow-sm" 
-                  />
+                <div className="flex flex-col md:flex-row gap-4 items-center cursor-pointer" onClick={() => navigate(`/dashboard/tracking?plate=${group.primaryPlate}`)}>
+                  {/* Images */}
+                  <div className="flex gap-[10px] shrink-0">
+                    <img 
+                      src={latest.vehicleImg} 
+                      alt="Vehicle" 
+                      className="w-[110px] h-[80px] object-cover rounded-lg border border-slate-700/50 bg-slate-900 shadow-sm" 
+                    />
+                    <img 
+                      src={latest.plateImg} 
+                      alt="Plate crop" 
+                      className="w-[90px] h-[80px] object-cover rounded-lg border border-slate-700/50 bg-slate-900 shadow-sm" 
+                    />
+                  </div>
+
+                  {/* Details Grid */}
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 w-full items-center pl-2">
+                    <div className="flex flex-col justify-center">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Number Plate</div>
+                      <div className="text-xl font-black text-white font-mono leading-none flex items-center gap-2">
+                        {group.displayPlate}
+                      </div>
+                      {group.ocrVariants.length > 0 && (
+                        <div className="text-[10px] text-slate-400 mt-1.5 font-mono">
+                          Merged variants: {group.ocrVariants.join(', ')}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col justify-center">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Seen Camera</div>
+                      <div className="text-sm font-bold text-blue-400 leading-tight">{latest.cameraId}</div>
+                      <div className="text-xs font-medium text-slate-400 mt-0.5">{cam?.location}</div>
+                    </div>
+
+                    <div className="flex flex-col justify-center">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Confidence & Status</div>
+                      <div className="flex items-center gap-1.5">
+                        {group.status === 'BLACKLISTED' && (
+                          <Badge variant="error" className="flex items-center gap-1 text-[10px] px-2 py-0.5">
+                            <AlertCircle size={12} /> {group.statusLabel}
+                          </Badge>
+                        )}
+                        {group.status === 'NEEDS_REVIEW' && (
+                          <Badge variant="warning" className="flex items-center gap-1 text-[10px] px-2 py-0.5">
+                            <AlertTriangle size={12} /> {group.statusLabel}
+                          </Badge>
+                        )}
+                        {group.status === 'VERIFIED' && (
+                          <Badge variant="success" className="flex items-center gap-1 text-[10px] px-2 py-0.5">
+                            <ShieldCheck size={12} /> {(group.maxConfidence * 100).toFixed(1)}% Confidence
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col justify-center">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Sightings History</div>
+                      <div className="text-sm font-bold text-slate-200 leading-none">
+                        {group.detections.length} Total {group.detections.length > 1 ? 'Camera Sightings' : 'Sighting'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Arrow Action */}
+                  <div className="shrink-0 p-2.5 bg-slate-800/50 rounded-full group-hover:bg-[#1769FF] transition-colors">
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                  </div>
                 </div>
 
-                {/* Details */}
-                <div className="flex-1 grid grid-cols-4 gap-4 w-full items-center pl-2">
-                  <div className="flex flex-col justify-center">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Number Plate</div>
-                    <div className="text-lg font-black text-white leading-none">{plate}</div>
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Seen Camera</div>
-                    <div className="text-sm font-bold text-blue-400 leading-tight">{latest.cameraId}</div>
-                    <div className="text-xs font-medium text-slate-400 mt-0.5">{cam?.location}</div>
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Timestamp</div>
-                    <div className="text-sm font-bold text-slate-200 leading-tight">{latest.timestamp}</div>
-                    <div className="text-[10px] font-medium text-emerald-400 mt-0.5">{(latest.confidence * 100).toFixed(1)}% Confidence</div>
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Sightings</div>
-                    <div className="text-sm font-bold text-slate-200 leading-none">{grouped[plate].length} Total</div>
-                  </div>
-                </div>
+                {/* Sighting Timeline Drawer inside Card */}
+                {group.detections.length > 1 && (
+                  <div className="mt-2 pt-3 border-t border-slate-800/80">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setExpandedPlate(isExpanded ? null : group.primaryPlate); }}
+                      className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      {isExpanded ? 'Hide Sighting History' : `View All ${group.detections.length} Sightings Timeline`}
+                    </button>
 
-                {/* Action */}
-                <div className="shrink-0 p-2.5 bg-slate-800/50 rounded-full group-hover:bg-[#1769FF] transition-colors">
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                </div>
+                    {isExpanded && (
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                        {group.detections.map((d, i) => (
+                          <div key={i} className="p-2 bg-slate-800/40 rounded border border-slate-800 flex justify-between items-center text-xs">
+                            <div>
+                              <div className="font-bold text-blue-400">{d.cameraId}</div>
+                              <div className="text-[10px] text-slate-400">{d.location}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold text-slate-300">{d.timestamp}</div>
+                              <div className="text-[10px] text-emerald-400">{(d.confidence * 100).toFixed(0)}% Conf</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </Card>
             );
           })}
           
-          {uniquePlates.length === 0 && (
+          {vehicleGroups.length === 0 && (
             <Card variant="glass" className="text-center py-12 border-dashed">
               <div className="text-slate-400 mb-2 font-medium">No vehicles found matching current search and filter criteria.</div>
               <button className="text-blue-400 font-bold text-sm hover:underline" onClick={resetFilters}>Reset all filters</button>

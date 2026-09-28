@@ -120,6 +120,9 @@ const initialDetections: Detection[] = [
   // KA01HQ1122 (Route: CAM_004 -> CAM_006)
   { id: 'd11', plate: 'KA01HQ1122', cameraId: 'CAM_004', location: 'Wagholi', latitude: 18.580, longitude: 73.978, timestamp: '18:45:00', vehicleType: 'SUV', vehicleColor: 'Blue', confidence: 0.85, direction: 'Southbound', plateImg: '/plate_ka01.png', vehicleImg: '/veh_ka01.png' },
   { id: 'd12', plate: 'KA01HQ1122', cameraId: 'CAM_006', location: 'Swargate', latitude: 18.501, longitude: 73.859, timestamp: '19:20:10', vehicleType: 'SUV', vehicleColor: 'Blue', confidence: 0.81, direction: 'Southbound', plateImg: '/plate_ka01.png', vehicleImg: '/veh_ka01.png' },
+
+  // Low Confidence / Unclear Plate Sample (Needs Review, NOT Alert)
+  { id: 'd13', plate: 'UNCLEAR_382', cameraId: 'CAM_005', location: 'University Road', latitude: 18.532, longitude: 73.829, timestamp: '11:42:10', vehicleType: 'Car', vehicleColor: 'Grey', confidence: 0.42, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
 ];
 
 export const useStore = create<AppState>((set, get) => ({
