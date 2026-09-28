@@ -9,7 +9,7 @@ import { Card } from '../components/ui/Card';
 
 export default function ANPRDemo() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>('/demo/real-traffic.mp4');
+  const [previewUrl, setPreviewUrl] = useState<string | null>('/assets/cctv_demo.mp4');
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,14 +34,14 @@ export default function ANPRDemo() {
     try {
       let fileToSend = selectedFile;
       
-      // If user hasn't uploaded a file, use the default demo video
+      // If user hasn't uploaded a file, use the preloaded demo video from public/assets
       if (!fileToSend && previewUrl) {
         try {
           const res = await fetch(previewUrl);
           const blob = await res.blob();
-          fileToSend = new File([blob], 'real-traffic.mp4', { type: 'video/mp4' });
+          fileToSend = new File([blob], 'cctv_demo.mp4', { type: 'video/mp4' });
         } catch (e) {
-          console.warn("Could not fetch default video blob, proceeding with fallback", e);
+          console.warn("Could not fetch preloaded video blob, proceeding with fallback", e);
         }
       }
 
