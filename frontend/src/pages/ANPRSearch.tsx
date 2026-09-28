@@ -7,11 +7,12 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 
-// OCR Canonicalizer for fuzzy OCR character equivalence (A<->3, I<->1, B<->8, O<->0, S<->5, Z<->2)
+// OCR Canonicalizer for fuzzy OCR character equivalence (A<->3<->4, I<->1, B<->8, O<->0, S<->5, Z<->2)
 function toCanonicalPlate(plate: string): string {
   return plate
     .toUpperCase()
-    .replace(/3/g, 'A')
+    .replace(/[^A-Z0-9]/g, '')
+    .replace(/[34]/g, 'A')
     .replace(/1/g, 'I')
     .replace(/8/g, 'B')
     .replace(/0/g, 'O')
