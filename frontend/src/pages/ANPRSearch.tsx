@@ -1,23 +1,68 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/store';
-import { Search, Filter, Calendar, Clock, Camera, ChevronRight } from 'lucide-react';
+import { Search, Filter, Calendar, Clock, Camera, ChevronRight, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 
 export default function ANPRSearch() {
   const { detections, cameras } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('All');
+  const [timeFilter, setTimeFilter] = useState('All');
+  const [cameraFilter, setCameraFilter] = useState('All');
   const navigate = useNavigate();
 
-  // Group detections by plate to show unique vehicles first
-  const grouped = detections.reduce((acc, curr) => {
+  // Filter detections based on search term, date, time window, and camera ID
+  const filteredDetections = detections.filter(d => {
+    // 1. Search term (plate number matching)
+    if (searchTerm.trim() && !d.plate.toLowerCase().includes(searchTerm.trim().toLowerCase())) {
+      return false;
+    }
+
+    // 2. Camera filter
+    if (cameraFilter !== 'All' && cameraFilter !== 'All Cameras' && d.cameraId !== cameraFilter) {
+      return false;
+    }
+
+    // 3. Time filter (Morning: 06:00-12:00, Evening: 16:00-22:00)
+    if (timeFilter === 'Morning (06-12)') {
+      const hour = parseInt(d.timestamp.split(':')[0], 10);
+      if (isNaN(hour) || hour < 6 || hour >= 12) return false;
+    } else if (timeFilter === 'Evening (16-22)') {
+      const hour = parseInt(d.timestamp.split(':')[0], 10);
+      if (isNaN(hour) || hour < 16 || hour >= 22) return false;
+    }
+
+    // 4. Date filter (Mock filtering: 'Today' matches timestamps from 10:00 onwards, 'Yesterday' matches 08:00-09:59)
+    if (dateFilter === 'Today') {
+      const hour = parseInt(d.timestamp.split(':')[0], 10);
+      if (!isNaN(hour) && hour < 10) return false;
+    } else if (dateFilter === 'Yesterday') {
+      const hour = parseInt(d.timestamp.split(':')[0], 10);
+      if (!isNaN(hour) && hour >= 10) return false;
+    }
+
+    return true;
+  });
+
+  // Group filtered detections by plate to show unique vehicles
+  const grouped = filteredDetections.reduce((acc, curr) => {
     if (!acc[curr.plate]) acc[curr.plate] = [];
     acc[curr.plate].push(curr);
     return acc;
   }, {} as Record<string, typeof detections>);
 
-  const uniquePlates = Object.keys(grouped).filter(p => p.toLowerCase().includes(searchTerm.toLowerCase()));
+  const uniquePlates = Object.keys(grouped);
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setDateFilter('All');
+    setTimeFilter('All');
+    setCameraFilter('All');
+  };
+
+  const hasActiveFilters = searchTerm || dateFilter !== 'All' || timeFilter !== 'All' || cameraFilter !== 'All';
 
   return (
     <div className="flex flex-col gap-6 h-full animate-in fade-in duration-300">
@@ -36,6 +81,14 @@ export default function ANPRSearch() {
               onChange={e => setSearchTerm(e.target.value)}
               className="pl-12 pr-4 py-3.5 border-2 border-slate-800 rounded-lg text-lg font-bold w-full focus:border-[#1769FF] focus:ring-4 focus:ring-[#1769FF]/10 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 text-white uppercase"
             />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')} 
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
           </div>
           <Button variant="primary" className="px-8 py-3.5 rounded-lg font-bold shadow-md text-lg h-auto">
             Search Database
@@ -46,35 +99,54 @@ export default function ANPRSearch() {
         <div className="flex flex-wrap items-center gap-3 mt-5 pt-5 border-t border-slate-800">
           <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700/80 rounded-md px-3 py-1.5 hover:border-slate-600 transition-colors">
             <Calendar className="w-3.5 h-3.5 text-blue-400" />
-            <select className="bg-transparent text-xs font-bold text-slate-300 outline-none cursor-pointer pr-2">
-              <option>Today</option>
-              <option>Yesterday</option>
-              <option>Last 7 Days</option>
+            <select 
+              value={dateFilter}
+              onChange={e => setDateFilter(e.target.value)}
+              className="bg-transparent text-xs font-bold text-slate-300 outline-none cursor-pointer pr-2"
+            >
+              <option value="All">All Dates</option>
+              <option value="Today">Today</option>
+              <option value="Yesterday">Yesterday</option>
+              <option value="Last 7 Days">Last 7 Days</option>
             </select>
           </div>
           
           <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700/80 rounded-md px-3 py-1.5 hover:border-slate-600 transition-colors">
             <Clock className="w-3.5 h-3.5 text-blue-400" />
-            <select className="bg-transparent text-xs font-bold text-slate-300 outline-none cursor-pointer pr-2">
-              <option>All Hours</option>
-              <option>Morning (06-12)</option>
-              <option>Evening (16-22)</option>
+            <select 
+              value={timeFilter}
+              onChange={e => setTimeFilter(e.target.value)}
+              className="bg-transparent text-xs font-bold text-slate-300 outline-none cursor-pointer pr-2"
+            >
+              <option value="All">All Hours</option>
+              <option value="Morning (06-12)">Morning (06-12)</option>
+              <option value="Evening (16-22)">Evening (16-22)</option>
             </select>
           </div>
           
           <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700/80 rounded-md px-3 py-1.5 hover:border-slate-600 transition-colors">
             <Camera className="w-3.5 h-3.5 text-blue-400" />
-            <select className="bg-transparent text-xs font-bold text-slate-300 outline-none cursor-pointer max-w-[120px] pr-2 text-ellipsis">
-              <option>All Cameras</option>
-              {cameras.map(c => <option key={c.id}>{c.id}</option>)}
+            <select 
+              value={cameraFilter}
+              onChange={e => setCameraFilter(e.target.value)}
+              className="bg-transparent text-xs font-bold text-slate-300 outline-none cursor-pointer max-w-[140px] pr-2 text-ellipsis"
+            >
+              <option value="All">All Cameras</option>
+              {cameras.map(c => <option key={c.id} value={c.id}>{c.id} - {c.location}</option>)}
             </select>
           </div>
           
-          <div className="h-5 w-px bg-slate-700 mx-2"></div>
-          
-          <button className="text-xs font-bold text-blue-400 flex items-center gap-1.5 hover:text-blue-300 hover:bg-blue-500/10 px-3 py-1.5 rounded-md transition-colors">
-            <Filter className="w-3.5 h-3.5" /> More Filters
-          </button>
+          {hasActiveFilters && (
+            <>
+              <div className="h-5 w-px bg-slate-700 mx-2"></div>
+              <button 
+                onClick={resetFilters}
+                className="text-xs font-bold text-red-400 flex items-center gap-1.5 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded-md transition-colors"
+              >
+                <X className="w-3.5 h-3.5" /> Clear Filters
+              </button>
+            </>
+          )}
         </div>
       </Card>
 
@@ -143,8 +215,8 @@ export default function ANPRSearch() {
           
           {uniquePlates.length === 0 && (
             <Card variant="glass" className="text-center py-12 border-dashed">
-              <div className="text-slate-400 mb-2 font-medium">No vehicles found matching "{searchTerm}"</div>
-              <button className="text-blue-400 font-bold text-sm hover:underline" onClick={() => setSearchTerm('')}>Clear search</button>
+              <div className="text-slate-400 mb-2 font-medium">No vehicles found matching current search and filter criteria.</div>
+              <button className="text-blue-400 font-bold text-sm hover:underline" onClick={resetFilters}>Reset all filters</button>
             </Card>
           )}
         </div>
