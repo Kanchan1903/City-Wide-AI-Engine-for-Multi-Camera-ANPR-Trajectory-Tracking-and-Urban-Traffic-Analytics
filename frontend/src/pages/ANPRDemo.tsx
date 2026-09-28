@@ -9,7 +9,7 @@ import { Card } from '../components/ui/Card';
 
 export default function ANPRDemo() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>('/assets/cctv_demo.mp4');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,27 +28,13 @@ export default function ANPRDemo() {
   };
 
   const handleProcess = async () => {
+    if (!selectedFile) return;
     setIsProcessing(true);
     setResults([]);
 
     try {
-      let fileToSend = selectedFile;
-      
-      // If user hasn't uploaded a file, use the preloaded demo video from public/assets
-      if (!fileToSend && previewUrl) {
-        try {
-          const res = await fetch(previewUrl);
-          const blob = await res.blob();
-          fileToSend = new File([blob], 'cctv_demo.mp4', { type: 'video/mp4' });
-        } catch (e) {
-          console.warn("Could not fetch preloaded video blob, proceeding with fallback", e);
-        }
-      }
-
       const formData = new FormData();
-      if (fileToSend) {
-        formData.append('file', fileToSend);
-      }
+      formData.append('file', selectedFile);
       formData.append('camera_id', 'CAM_005'); // default demo camera
 
       const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
@@ -110,7 +96,7 @@ export default function ANPRDemo() {
             vehicleColor: veh.color || 'White',
             direction: 'Northbound',
             confidence: res.plate_detection_confidence || 0.95,
-            plateImg: (selectedFile && selectedFile.type.startsWith('image')) ? (previewUrl || '/anpr_plate_crop.png') : '/anpr_plate_crop.png',
+            plateImg: (selectedFile && selectedFile.type.startsWith('image')) ? (previewUrl || '/plate_mh12.png') : '/plate_mh12.png',
             vehicleImg: (selectedFile && selectedFile.type.startsWith('image')) ? (previewUrl || '/anpr_vehicle_match.png') : '/anpr_vehicle_match.png'
           };
           addDetection(newDetection);
@@ -149,9 +135,11 @@ export default function ANPRDemo() {
         <Card variant="glass" className="flex flex-col h-full overflow-hidden">
           <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">Source Input</h3>
-            <span className="text-xs text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20 font-medium">
-              {!selectedFile ? 'Default Footage Loaded' : selectedFile.name}
-            </span>
+            {selectedFile && (
+              <span className="text-xs text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20 font-medium">
+                {selectedFile.name}
+              </span>
+            )}
           </div>
           
           <div className="p-6 flex-1 flex flex-col items-center justify-center">
@@ -199,19 +187,20 @@ export default function ANPRDemo() {
             />
             
             <div className="flex gap-4 w-full mt-6">
-              <Button 
-                variant="outline" 
-                className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Custom
-              </Button>
+              {previewUrl && (
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
+                  onClick={() => { setSelectedFile(null); setPreviewUrl(null); setResults([]); }}
+                  disabled={isProcessing}
+                >
+                  Clear
+                </Button>
+              )}
               <Button 
                 className="flex-1 bg-[#1769FF] hover:bg-blue-600 text-white font-bold"
                 onClick={handleProcess}
-                disabled={isProcessing}
+                disabled={!selectedFile || isProcessing}
               >
                 <Play className="w-4 h-4 mr-2" />
                 {isProcessing ? 'Processing...' : 'Run Pipeline'}
