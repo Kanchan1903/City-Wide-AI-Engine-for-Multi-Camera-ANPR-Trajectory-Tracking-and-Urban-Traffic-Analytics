@@ -52,29 +52,18 @@ export default function ANPRDemo() {
  clearTimeout(timeoutId);
  if (!response.ok) throw new Error(`API Error: ${response.status}`);
  data = await response.json();
- } catch (fetchErr) {
- clearTimeout(timeoutId);
- console.warn("Backend API request timed out or unavailable. Falling back to Demo Mode result.", fetchErr);
- data = [{
- detection_id: `det_${Math.random().toString(36).substring(2, 10)}`,
- camera_id: "CAM_005",
- timestamp: new Date().toISOString(),
- plate_number: "MH12AB1234",
- raw_ocr_text: "MH 12 AB 1234",
- normalized_plate_number: "MH12AB1234",
- plate_detection_confidence: 0.96,
- ocr_confidence: 0.94,
- quality_score: 85,
- overall_confidence: 0.92,
- confidence_level: "HIGH",
- vehicle_bbox: [100, 150, 400, 350],
- plate_bbox: [200, 250, 300, 280],
- format_valid: true,
- processing_mode: "DEMO",
- review_status: "PENDING"
- }];
- }
+  } catch (fetchErr: any) {
+  clearTimeout(timeoutId);
+  console.error("Backend API request timed out or unavailable.", fetchErr);
+  data = [{
+  processing_mode: "FAILED",
+  raw_ocr_text: "Failed to connect to the backend API or request timed out."
+  }];
+  }
 
+  if (data && data.length === 0) {
+     data = [{ processing_mode: "FAILED", raw_ocr_text: "No license plates detected in the image." }];
+  }
  setResults(data);
 
  // Inject into centralized Zustand store so Tracking & Search work instantly
@@ -246,9 +235,13 @@ export default function ANPRDemo() {
                     </div>
                     
                     <div className="text-center">
-                      <div className="text-4xl md:text-5xl font-black text-white font-mono tracking-tight mb-2">{res.plate_number}</div>
+                      <div className="text-4xl md:text-5xl font-black text-white font-mono tracking-tight mb-2">
+                        {res.plate_number ? res.plate_number : <span className="text-2xl text-slate-500 font-sans tracking-normal">Plate not recognized</span>}
+                      </div>
                       <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                        OCR Confidence: <span className={`${res.confidence_level === 'HIGH' ? 'text-emerald-400' : 'text-amber-400'}`}>{(res.overall_confidence * 100).toFixed(1)}%</span>
+                        OCR Confidence: <span className={`${res.confidence_level === 'HIGH' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                          {res.ocr_confidence != null ? (res.ocr_confidence * 100).toFixed(1) : "0.0"}%
+                        </span>
                       </div>
                     </div>
                   </div>

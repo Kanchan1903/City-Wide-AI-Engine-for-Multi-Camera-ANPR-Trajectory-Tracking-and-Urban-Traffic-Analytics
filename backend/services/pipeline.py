@@ -106,34 +106,10 @@ class ANPRPipeline:
         except Exception as e:
             logger.error(f"Pipeline processing failed: {str(e)}")
             
-            # If the model is not loaded, we fall back to DEMO MODE to ensure the SIH prototype continues to function
-            if "not configured" in str(e) or "not found" in str(e):
-                logger.info("Falling back to DEMO MODE for presentation purposes.")
-                det_id = f"det_{uuid.uuid4().hex[:8]}"
-                timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                results.append({
-                    "detection_id": det_id,
-                    "camera_id": camera_id,
-                    "timestamp": timestamp,
-                    "plate_number": "MH12AB1234",
-                    "raw_ocr_text": "MH 12 AB 1234",
-                    "normalized_plate_number": "MH12AB1234",
-                    "plate_detection_confidence": 0.96,
-                    "ocr_confidence": 0.94,
-                    "quality_score": 85,
-                    "overall_confidence": 0.92,
-                    "confidence_level": "HIGH",
-                    "vehicle_bbox": [100, 150, 400, 350],
-                    "plate_bbox": [200, 250, 300, 280],
-                    "format_valid": True,
-                    "processing_mode": "DEMO",
-                    "review_status": "PENDING"
-                })
-            else:
-                # Return a FAILED record to indicate the pipeline broke due to other errors
-                det_id = f"det_{uuid.uuid4().hex[:8]}"
-                timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                results.append({
+            # Return a FAILED record to indicate the pipeline broke
+            det_id = f"det_{uuid.uuid4().hex[:8]}"
+            timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            results.append({
                     "detection_id": det_id,
                     "camera_id": camera_id,
                     "timestamp": timestamp,
