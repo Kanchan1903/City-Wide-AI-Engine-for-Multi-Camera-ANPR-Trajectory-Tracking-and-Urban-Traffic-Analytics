@@ -125,9 +125,7 @@ export default function ANPRDemo() {
  End-to-end Indian number-plate detection powered by YOLOv8 and PaddleOCR.
  </p>
  </div>
- <Badge variant="warning" className="px-4 py-1 text-sm tracking-widest font-black uppercase shadow-lg">
- Demo Mode Ready
- </Badge>
+ 
  </Card>
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 overflow-y-auto custom-scrollbar pb-6">
@@ -234,82 +232,29 @@ export default function ANPRDemo() {
  <span className="text-xs font-normal text-slate-400">{res.raw_ocr_text}</span>
  </div>
  ) : (
- <>
- {res.processing_mode === 'DEMO' && (
- <div className="absolute top-0 right-0 bg-amber-500/20 text-amber-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-lg border-b border-l border-amber-500/30">
- Demo Result
- </div>
- )}
- 
- <div className="flex gap-4">
- <div className="w-24 shrink-0 flex flex-col gap-2">
- <div className="h-16 bg-slate-900 rounded border border-slate-800 overflow-hidden relative">
- {(selectedFile && selectedFile.type.startsWith('image')) ? (
- <img src={previewUrl || ''} className="w-full h-full object-cover opacity-80" alt="Crop" />
- ) : (
- <img src="/anpr_plate_crop.png" className="w-full h-full object-cover opacity-80" alt="Crop" />
- )}
- <div className="absolute inset-0 border border-blue-500/50 m-1 rounded-sm shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
- </div>
- </div>
- 
- <div className="flex-1">
- <div className="flex justify-between items-start mb-2">
- <div>
- <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Detected Plate</div>
- <div className="text-2xl font-black text-white font-mono tracking-tight">{res.plate_number}</div>
- </div>
- <div className="text-right">
- <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Confidence</div>
- <div className={`text-sm font-black ${res.confidence_level === 'HIGH' ? 'text-emerald-400' : 'text-amber-400'}`}>
- {(res.overall_confidence * 100).toFixed(1)}%
- </div>
- </div>
- </div>
- 
- <div className="grid grid-cols-2 gap-2 mt-3 p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
- <div>
- <div className="text-[9px] font-bold text-slate-500 uppercase">Camera ID</div>
- <div className="text-xs font-bold text-slate-300">{res.camera_id}</div>
- </div>
- <div>
- <div className="text-[9px] font-bold text-slate-500 uppercase">Detection Time</div>
- <div className="text-xs font-bold text-slate-300">{new Date(res.timestamp).toLocaleTimeString()}</div>
- </div>
- </div>
- </div>
- </div>
- 
- {/* Action Links */}
- <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-slate-800/50">
- <Button 
- size="sm" 
- variant="outline" 
- className="bg-slate-900 border-slate-700 hover:bg-slate-800 hover:text-white text-xs h-8"
- onClick={() => openVehicleDrawer(res.plate_number)}
- >
- <Search size={14} className="mr-1.5" /> Details
- </Button>
- <Button 
- size="sm" 
- variant="outline" 
- className="bg-slate-900 border-slate-700 hover:bg-slate-800 hover:text-white text-xs h-8"
- onClick={() => navigate(`/dashboard/tracking?plate=${res.plate_number}`)}
- >
- <Map size={14} className="mr-1.5" /> Track
- </Button>
- <Button 
- size="sm" 
- variant="outline" 
- className="bg-slate-900 border-slate-700 hover:bg-slate-800 hover:text-white text-xs h-8"
- onClick={() => navigate(`/dashboard/alerts`)}
- >
- <Bell size={14} className="mr-1.5" /> Alerts
- </Button>
- </div>
- </>
- )}
- </Card>
+                 <>
+                  <div className="flex flex-col gap-6 py-4">
+                    <div className="w-full flex justify-center">
+                      <div className="h-24 md:h-32 bg-slate-900 rounded border border-slate-800 overflow-hidden relative inline-block">
+                        {(selectedFile && selectedFile.type.startsWith('image')) ? (
+                          <img src={previewUrl || ''} className="h-full w-auto object-contain opacity-90" alt="Crop" />
+                        ) : (
+                          <img src="/anpr_plate_crop.png" className="h-full w-auto object-contain opacity-90" alt="Crop" />
+                        )}
+                        <div className="absolute inset-0 border-2 border-blue-500/50 m-1 rounded shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="text-4xl md:text-5xl font-black text-white font-mono tracking-tight mb-2">{res.plate_number}</div>
+                      <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                        OCR Confidence: <span className={`${res.confidence_level === 'HIGH' ? 'text-emerald-400' : 'text-amber-400'}`}>{(res.overall_confidence * 100).toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </Card>
  ))}
  </div>
  </div>
