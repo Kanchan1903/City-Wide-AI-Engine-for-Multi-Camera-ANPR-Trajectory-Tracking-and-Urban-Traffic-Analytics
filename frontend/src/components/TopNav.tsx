@@ -7,8 +7,6 @@ export default function TopNav() {
  const navigate = useNavigate();
  const theme = useStore((state) => state.theme);
  const toggleTheme = useStore((state) => state.toggleTheme);
- const theme = useStore((state) => state.theme);
- const toggleTheme = useStore((state) => state.toggleTheme);
 
  return (
  <nav className="relative z-50 pt-6 px-4 md:px-8 max-w-[1400px] mx-auto w-full">

@@ -154,9 +154,13 @@ export const useStore = create<AppState>((set, get) => ({
  activeAlerts: 1,
  vehiclesToday: 42105,
  },
- theme: 'dark',
+ theme: (localStorage.getItem('trace360-theme') as 'light' | 'dark') || 'dark',
  
- toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+ toggleTheme: () => set((state) => {
+ const newTheme = state.theme === 'dark' ? 'light' : 'dark';
+ localStorage.setItem('trace360-theme', newTheme);
+ return { theme: newTheme };
+ }),
  toggleDemoMode: () => set((state) => ({ demoModeActive: !state.demoModeActive })),
  setGlobalSearchPlate: (plate) => set({ globalSearchPlate: plate.trim().toUpperCase() }),
  
