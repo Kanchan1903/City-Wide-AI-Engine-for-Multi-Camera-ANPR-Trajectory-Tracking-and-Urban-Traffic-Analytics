@@ -116,7 +116,7 @@ export default function LiveCameraModal() {
  
  {/* Mock Overlay UI on video */}
  <div className="absolute top-4 left-4 bg-black/80 text-white text-xs font-mono px-3 py-1.5 rounded z-20 border border-white/10">
- {isHistorical ? 'PLAYBACK' : 'REC'} • {camera.location} • 1080p
+ {isHistorical ? 'PLAYBACK' : 'REC'} • {camera.location}
  </div>
  <div className="absolute top-4 right-4 bg-black/80 text-blue-400 text-xs font-bold font-mono px-3 py-1.5 rounded text-right z-20 border border-white/10">
  {isHistorical ? (
