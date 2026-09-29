@@ -15,7 +15,13 @@ from schemas.anpr_schemas import DetectionBase, ProcessingJobResponse, JobStatus
 from services.pipeline import ANPRPipeline
 
 router = APIRouter(prefix="/api/anpr", tags=["ANPR"])
-pipeline = ANPRPipeline()
+_pipeline = None
+
+def get_pipeline():
+    global _pipeline
+    if _pipeline is None:
+        _pipeline = ANPRPipeline()
+    return _pipeline
 
 UPLOAD_DIR = Path("data/uploads")
 PROCESSED_DIR = Path("data/processed")
@@ -49,6 +55,7 @@ async def process_image(file: UploadFile = File(...), camera_id: str = Form("CAM
         img = np.zeros((100, 100, 3), dtype=np.uint8)
         
     # Process
+    pipeline = get_pipeline()
     results = pipeline.process_image(img, camera_id=camera_id)
     
     saved_detections = []
@@ -101,6 +108,7 @@ def process_video_background(job_id: str, file_path: str, camera_id: str, db: Se
             
             # Simple frame skipping for MVP (process 1 frame per sec, assuming 30fps)
             if frame_idx % 30 == 0:
+                pipeline = get_pipeline()
                 results = pipeline.process_image(frame, camera_id=camera_id)
                 all_detections.extend(results)
                 
