@@ -236,10 +236,10 @@ export default function LandingPage() {
 
  {/* Compact Statistics Section */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-16 relative z-20">
- <StatCard title="Cameras Online" value={onlineCameras.toLocaleString()} sub="100% Operational" icon={<Camera className="w-5 h-5 text-blue-400" />} />
- <StatCard title="Vehicles Tracked" value={stats.vehiclesToday.toLocaleString()} sub="Updated in real-time" icon={<Activity className="w-5 h-5 text-emerald-400" />} />
- <StatCard title="Active Alerts" value={activeAlertsCount.toString()} sub={`${highPriorityCount} High priority`} icon={<AlertTriangle className="w-5 h-5 text-amber-400" />} />
- <StatCard title="Traffic Zones" value="18" sub="All sectors online" icon={<MapPin className="w-5 h-5 text-purple-400" />} />
+ <StatCard title="Cameras Online" value={onlineCameras.toLocaleString()} sub="100% Operational" icon={<Camera className="w-5 h-5 text-blue-400" />} onClick={() => navigate('/dashboard/cameras')} delay={0.1} />
+ <StatCard title="Vehicles Tracked" value={stats.vehiclesToday.toLocaleString()} sub="Updated in real-time" icon={<Activity className="w-5 h-5 text-emerald-400" />} onClick={() => navigate('/dashboard/tracking')} delay={0.2} />
+ <StatCard title="Active Alerts" value={activeAlertsCount.toString()} sub={`${highPriorityCount} High priority`} icon={<AlertTriangle className="w-5 h-5 text-amber-400" />} onClick={() => navigate('/dashboard/alerts')} delay={0.3} />
+ <StatCard title="Traffic Zones" value="18" sub="All sectors online" icon={<MapPin className="w-5 h-5 text-purple-400" />} onClick={() => navigate('/dashboard/analytics')} delay={0.4} />
  </div>
 
  </main>
@@ -248,9 +248,16 @@ export default function LandingPage() {
 }
 
 // Sub-components
-function StatCard({ title, value, sub, icon }: { title: string, value: string | number, sub: string, icon: React.ReactNode }) {
+function StatCard({ title, value, sub, icon, onClick, delay = 0 }: { title: string, value: string | number, sub: string, icon: React.ReactNode, onClick?: () => void, delay?: number }) {
  return (
- <div className="bg-slate-800 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between group hover:border-slate-700 transition-colors">
+ <motion.div 
+   onClick={onClick}
+   whileHover={{ scale: 1.05, y: -5 }}
+   initial={{ opacity: 0, y: 20 }}
+   animate={{ opacity: 1, y: 0 }}
+   transition={{ duration: 0.4, delay }}
+   className={`bg-slate-800 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between group hover:border-slate-700 transition-all ${onClick ? 'cursor-pointer hover:shadow-[0_10px_25px_-5px_rgba(59,130,246,0.15)]' : ''}`}
+ >
  <div className="flex justify-between items-start mb-4">
  <h3 className="text-slate-400 text-sm font-semibold">{title}</h3>
  <div className="p-2 bg-slate-800/50 rounded-lg group-hover:bg-slate-800 transition-colors">
@@ -261,6 +268,6 @@ function StatCard({ title, value, sub, icon }: { title: string, value: string | 
  <div className="text-3xl font-black text-white mb-1 tracking-tight font-mono">{value}</div>
  <div className="text-xs font-medium text-slate-500">{sub}</div>
  </div>
- </div>
+ </motion.div>
  );
 }
