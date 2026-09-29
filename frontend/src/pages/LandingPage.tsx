@@ -207,23 +207,25 @@ export default function LandingPage() {
  {/* Bottom Status Bar */}
  <div className="absolute bottom-0 left-0 w-full bg-slate-800/95 border-t border-slate-800 p-2 md:px-4 md:py-2 flex justify-between items-center z-30">
  <div className="flex items-center gap-4 md:gap-6">
- <div className="flex flex-col">
+ <div className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/dashboard')}>
  <span className="text-[8px] text-slate-500 font-bold uppercase">System Status</span>
- <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">OPTIMAL <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div></span>
+ <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">OPTIMAL <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div></span>
  </div>
- <div className="hidden md:flex flex-col">
+ <div className="hidden md:flex flex-col cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/dashboard/analytics')}>
  <span className="text-[8px] text-slate-500 font-bold uppercase">Avg Latency</span>
  <span className="text-[10px] text-slate-300 font-bold font-mono">18ms</span>
  </div>
- <div className="hidden sm:flex flex-col">
+ <div className="hidden sm:flex flex-col cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/dashboard/analytics')}>
  <span className="text-[8px] text-slate-500 font-bold uppercase">Processing Rate</span>
  <span className="text-[10px] text-slate-300 font-bold font-mono">142 frames/s</span>
  </div>
  </div>
  
- <div className="flex items-center gap-2">
- <AlertCircle size={12} className="text-amber-500" />
- <span className="text-[10px] text-amber-500 font-bold">0 ALERT QUEUE</span>
+ <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity bg-slate-900/50 px-3 py-1 rounded-full border border-slate-700/50" onClick={() => navigate('/dashboard/alerts')}>
+ <AlertCircle size={12} className={activeAlertsCount > 0 ? "text-amber-500" : "text-slate-500"} />
+ <span className={`text-[10px] font-bold ${activeAlertsCount > 0 ? "text-amber-500" : "text-slate-400"}`}>
+ {activeAlertsCount} ALERT QUEUE
+ </span>
  </div>
  </div>
 
