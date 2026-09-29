@@ -203,33 +203,6 @@ export default function LandingPage() {
  <div className="w-3 h-3 bg-slate-500 rounded-sm"></div>
  </motion.div>
 
- {/* Inset CCTV Feed Panel */}
- <div className="absolute bottom-4 right-4 w-[220px] md:w-[280px] bg-slate-900/90 border border-slate-700 rounded-lg shadow-2xl overflow-hidden z-30">
- <div className="bg-slate-800 px-3 py-1.5 flex justify-between items-center border-b border-slate-700">
- <span className="text-[10px] font-bold text-slate-300 flex items-center gap-1.5">
- <Radio size={10} className="text-red-400 animate-pulse" /> CAM-02 FEED
- </span>
- <span className="text-[9px] font-mono text-slate-400">14:32:05</span>
- </div>
- <div className="relative aspect-video bg-slate-900 overflow-hidden">
- {/* Mock image content (simulated with CSS for now or use a placeholder) */}
- <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-700 via-slate-800 to-slate-900 opacity-60 flex items-center justify-center">
- <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
- </div>
- 
- {/* ANPR Overlay Box on Image */}
- <div className="absolute top-[40%] left-[35%] w-[30%] h-[20%] border-2 border-cyan-400 bg-cyan-400/20 flex items-end justify-center pb-0.5">
- <div className="bg-cyan-400 text-black font-mono font-bold text-[8px] md:text-[10px] px-1 transform translate-y-full">MH12AB1234</div>
- </div>
- 
-   
- <div className="absolute bottom-2 right-2">
- <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ">
- <CheckCircle2 size={8} /> MATCH: 98.4%
- </span>
- </div>
- </div>
- </div>
 
  {/* Bottom Status Bar */}
  <div className="absolute bottom-0 left-0 w-full bg-slate-800/95 border-t border-slate-800 p-2 md:px-4 md:py-2 flex justify-between items-center z-30">
