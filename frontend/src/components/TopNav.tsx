@@ -74,14 +74,7 @@ export default function TopNav() {
  >
  Search
  </NavLink>
- <NavLink 
- to="/dashboard/area" 
- className={({ isActive }) => 
- `transition-colors flex items-center ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`
- }
- >
- Area Search
- </NavLink>
+
  <NavLink 
  to="/dashboard/cameras" 
  className={({ isActive }) => 

@@ -67,7 +67,19 @@ export default function VehicleRoutes() {
  <Card variant="glass" className="flex-1 flex flex-col overflow-hidden">
  <div className="p-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Trajectory Map</div>
+ <div className="flex gap-2 items-center">
+ <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded px-2 py-1 hidden md:flex">
+ <MapIcon size={12} className="text-blue-400" />
+ <select className="bg-transparent text-[10px] font-bold text-slate-300 outline-none cursor-pointer max-w-[120px]">
+ <option value="all">Search City Area</option>
+ <option value="hinjawadi">Hinjawadi IT Park</option>
+ <option value="shivajinagar">Shivajinagar</option>
+ <option value="kothrud">Kothrud</option>
+ <option value="viman-nagar">Viman Nagar</option>
+ </select>
+ </div>
  <Badge variant="info">Live Tracking</Badge>
+ </div>
  </div>
  <div className="flex-1 relative bg-slate-900">
  <CityMap 
