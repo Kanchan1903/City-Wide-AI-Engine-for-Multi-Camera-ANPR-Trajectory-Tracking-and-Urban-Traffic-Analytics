@@ -7,19 +7,15 @@ import {
  Crosshair, Radio, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import TopNav from '../components/TopNav';
+import { useStore } from '../store/store';
 
 export default function LandingPage() {
  const navigate = useNavigate();
+ const { stats, alerts, cameras } = useStore();
 
- // Subtle counters
- const [vehiclesTracked, setVehiclesTracked] = useState(42850);
- 
- useEffect(() => {
- const interval = setInterval(() => {
- setVehiclesTracked(prev => prev + Math.floor(Math.random() * 3));
- }, 2500);
- return () => clearInterval(interval);
- }, []);
+ const activeAlertsCount = alerts.filter(a => !a.read).length;
+ const highPriorityCount = alerts.filter(a => !a.read && a.type === 'error').length;
+ const onlineCameras = cameras.filter(c => c.status === 'online').length;
 
  return (
  <div className="min-h-screen bg-slate-900 text-slate-300 font-sans relative selection:bg-blue-500/30 flex flex-col">
@@ -226,10 +222,7 @@ export default function LandingPage() {
  <div className="bg-cyan-400 text-black font-mono font-bold text-[8px] md:text-[10px] px-1 transform translate-y-full">MH12AB1234</div>
  </div>
  
- {/* Feed stats */}
- <div className="absolute top-2 left-2 flex flex-col gap-1">
- <span className="bg-black/60 text-white text-[8px] px-1 rounded ">1080P • 30FPS</span>
- </div>
+   
  <div className="absolute bottom-2 right-2">
  <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ">
  <CheckCircle2 size={8} /> MATCH: 98.4%
@@ -268,9 +261,9 @@ export default function LandingPage() {
 
  {/* Compact Statistics Section */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-16 relative z-20">
- <StatCard title="Cameras Online" value="1,284" sub="98.7% Operational Coverage" icon={<Camera className="w-5 h-5 text-blue-400" />} />
- <StatCard title="Vehicles Tracked" value={vehiclesTracked.toLocaleString()} sub="Updated in real-time" icon={<Activity className="w-5 h-5 text-emerald-400" />} />
- <StatCard title="Active Alerts" value="14" sub="3 High priority" icon={<AlertTriangle className="w-5 h-5 text-amber-400" />} />
+ <StatCard title="Cameras Online" value={onlineCameras.toLocaleString()} sub="100% Operational" icon={<Camera className="w-5 h-5 text-blue-400" />} />
+ <StatCard title="Vehicles Tracked" value={stats.vehiclesToday.toLocaleString()} sub="Updated in real-time" icon={<Activity className="w-5 h-5 text-emerald-400" />} />
+ <StatCard title="Active Alerts" value={activeAlertsCount.toString()} sub={`${highPriorityCount} High priority`} icon={<AlertTriangle className="w-5 h-5 text-amber-400" />} />
  <StatCard title="Traffic Zones" value="18" sub="All sectors online" icon={<MapPin className="w-5 h-5 text-purple-400" />} />
  </div>
 
