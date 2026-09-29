@@ -6,41 +6,51 @@ logger = logging.getLogger(__name__)
 
 class OCRService:
     def __init__(self, use_gpu: bool = False):
-        self.ocr = None
         try:
-            import easyocr
-            self.ocr = easyocr.Reader(['en'], gpu=use_gpu)
-            logger.info("EasyOCR loaded successfully.")
+            import pytesseract
+            self.ocr_available = True
+            logger.info("PyTesseract initialized successfully.")
         except ImportError:
-            logger.warning("EasyOCR not installed. Run 'pip install easyocr'.")
+            self.ocr_available = False
+            logger.warning("PyTesseract not installed. Run 'pip install pytesseract'.")
         except Exception as e:
-            logger.error(f"Failed to initialize EasyOCR: {str(e)}")
+            self.ocr_available = False
+            logger.error(f"Failed to initialize PyTesseract: {str(e)}")
 
     def extract_text(self, image: np.ndarray) -> dict:
         """
-        Runs OCR on the provided image crop.
+        Runs OCR on the provided image crop using PyTesseract.
         Returns a dict with raw_text, normalized_text, and confidence.
         """
-        if self.ocr is None:
-            raise Exception("EasyOCR is not initialized. Cannot perform real inference.")
+        if not self.ocr_available:
+            raise Exception("PyTesseract is not initialized. Cannot perform real inference.")
             
         try:
-            # result is a list of tuples: (bbox, text, prob)
-            result = self.ocr.readtext(image)
-            if not result:
-                return {"raw_text": "", "normalized_text": "", "ocr_confidence": 0.0}
-                
+            import pytesseract
+            
+            # Using PSM 7 (single line of text) and whitelisting alphanumeric characters
+            custom_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+            
+            # Extract data including confidences
+            data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT, config=custom_config)
+            
             raw_text = ""
             total_conf = 0.0
             count = 0
             
-            for (bbox, text, prob) in result:
-                raw_text += text + " "
-                total_conf += prob
-                count += 1
+            for i in range(len(data['text'])):
+                text = data['text'][i].strip()
+                conf = int(data['conf'][i])
                 
+                # Confidence is -1 if it's not a recognized word block
+                if text and conf > -1:
+                    raw_text += text + " "
+                    total_conf += conf
+                    count += 1
+                    
             raw_text = raw_text.strip()
-            avg_conf = total_conf / count if count > 0 else 0.0
+            # Tesseract confidence is 0-100, we need 0-1.0
+            avg_conf = (total_conf / count / 100.0) if count > 0 else 0.0
             
             return {
                 "raw_text": raw_text,
@@ -53,10 +63,7 @@ class OCRService:
 
     def normalize_text(self, text: str) -> str:
         """
-        Normalizes OCR text for Indian License Plates:
-        - Uppercase
-        - Remove spaces and special characters
-        - Extract only the license plate substring to ignore noise (e.g. 'IND', dealership names)
+        Normalizes OCR text for Indian License Plates.
         """
         text = text.upper()
         # Keep only alphanumeric

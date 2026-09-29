@@ -2,9 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies for OpenCV and GeoAlchemy/PostGIS
+# Install system dependencies for OpenCV, GeoAlchemy/PostGIS, and Tesseract OCR
 RUN apt-get update && apt-get install -y \
-    libpq-dev gcc libgl1 libglib2.0-0 libgomp1 \
+    libpq-dev gcc libgl1 libglib2.0-0 libgomp1 tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
