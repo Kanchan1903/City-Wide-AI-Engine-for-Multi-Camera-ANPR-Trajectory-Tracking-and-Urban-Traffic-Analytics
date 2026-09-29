@@ -57,6 +57,7 @@ function App() {
  <Route path="analytics" element={<TrafficAnalytics />} />
  <Route path="alerts" element={<AlertsView />} />
  <Route path="reports" element={<ReportsView />} />
+ <Route path="area" element={<div className="p-6 text-xl text-slate-500 font-medium">Area Search Under Construction</div>} />
  <Route path="settings" element={<div className="p-6 text-xl text-slate-500 font-medium">System Settings Under Construction</div>} />
  <Route path="*" element={<Navigate to="/dashboard" replace />} />
  </Route>
