@@ -30,7 +30,7 @@ export default function LandingPage() {
  <div className="lg:col-span-5 flex flex-col items-start z-20">
  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-xs font-bold text-slate-300 mb-6 tracking-wide shadow-sm">
  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div> 
- CITY TRAFFIC MANAGEMENT PLATFORM
+ CITY-WIDE VEHICLE INTELLIGENCE PLATFORM
  </div>
  
  <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-4 drop-shadow-sm leading-tight">
