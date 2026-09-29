@@ -111,13 +111,19 @@ const FocusLocation = ({ focusLocation }: { focusLocation?: [number, number] }) 
  return null;
 };
 
-const CityMap = ({ layers, routePath, routeSequence, timeOfDay, routeProgress = 100, focusLocation }: { layers?: any, routePath?: [number, number][], routeSequence?: any[], timeOfDay?: number, routeProgress?: number, focusLocation?: [number, number] }) => {
+const CityMap = ({ layers, routePath, routeSequence, timeOfDay, routeProgress = 100, focusLocation, customHeatmapData }: { layers?: any, routePath?: [number, number][], routeSequence?: any[], timeOfDay?: number, routeProgress?: number, focusLocation?: [number, number], customHeatmapData?: [number, number, number][] }) => {
  const [heatmapData, setHeatmapData] = useState<any[]>([]);
  const [congestionData, setCongestionData] = useState<any[]>([]);
  const [detailedRoute, setDetailedRoute] = useState<[number, number][] | null>(null);
  const { openCameraModal, openVehicleDrawer, cameras } = useStore();
 
  useEffect(() => {
+ if (customHeatmapData) {
+ setHeatmapData(customHeatmapData);
+ setCongestionData([]); // Optional: could also pass custom congestion
+ return;
+ }
+
  // Generate Heatmap Data
  setHeatmapData(generateMockHeatmapPoints(timeOfDay));
  
@@ -147,7 +153,7 @@ const CityMap = ({ layers, routePath, routeSequence, timeOfDay, routeProgress = 
  }, 18000);
  return () => clearInterval(interval);
  }
- }, [timeOfDay]);
+ }, [timeOfDay, customHeatmapData]);
 
  // Fetch detailed route from OSRM so line snaps to roads instead of being straight
  useEffect(() => {

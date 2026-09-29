@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
  BarChart3, Calendar, Map, Activity, 
- TrendingUp, Clock, AlertTriangle 
+ TrendingUp, Clock, AlertTriangle, Info
 } from 'lucide-react';
 import { 
  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useStore } from '../store/store';
+import CityMap from '../components/traffic/CityMap';
 
 const hourlyTrafficData = [
  { time: '06:00', yesterday: 210, today: 195 },
@@ -29,15 +30,107 @@ const fallbackVehicleTypeData = [
  { name: 'Others', value: 3, color: '#94a3b8' },
 ];
 
-const hotspotData = [
- { name: 'Shivajinagar Jct', delay: '12 mins', status: 'High' },
- { name: 'Hinjawadi Phase 1', delay: '18 mins', status: 'Critical' },
- { name: 'Kothrud Stand', delay: '5 mins', status: 'Normal' },
- { name: 'Swargate', delay: '9 mins', status: 'Moderate' },
-];
-
 export default function TrafficAnalytics() {
- const { vehicles } = useStore();
+ const { vehicles, detections, cameras } = useStore();
+ const [timeFilter, setTimeFilter] = useState('Last 1 hour');
+ const [zoneFilter, setZoneFilter] = useState('All Zones (Pune)');
+
+ // Determine the "current" time based on the latest detection timestamp in the dataset
+ const parsedTimeFilter = React.useMemo(() => {
+ if (detections.length === 0) return { now: 0, window: 3600 };
+ 
+ let maxTime = 0;
+ detections.forEach(d => {
+ const parts = d.timestamp.split(':');
+ if (parts.length === 3) {
+ const seconds = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+ if (seconds > maxTime) maxTime = seconds;
+ }
+ });
+
+ let windowSeconds = 3600;
+ if (timeFilter === 'Live (Last 5m)') windowSeconds = 5 * 60;
+ else if (timeFilter === 'Last 15 min') windowSeconds = 15 * 60;
+ else if (timeFilter === 'Last 30 min') windowSeconds = 30 * 60;
+ else if (timeFilter === 'Last 1 hour') windowSeconds = 60 * 60;
+ else windowSeconds = 24 * 3600;
+
+ return { now: maxTime, window: windowSeconds };
+ }, [detections, timeFilter]);
+
+ // Calculate Heatmap and Analytics based strictly on real detections within the time window
+ const { heatmapData, hotspotDataList, vehiclesDetected, avgFlow, maxDensityZone } = React.useMemo(() => {
+ const validDets = detections.filter(d => {
+ const parts = d.timestamp.split(':');
+ if (parts.length !== 3) return false;
+ const detSeconds = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+ return detSeconds >= (parsedTimeFilter.now - parsedTimeFilter.window) && detSeconds <= parsedTimeFilter.now;
+ });
+
+ const cameraCounts: Record<string, number> = {};
+ validDets.forEach(d => {
+ cameraCounts[d.cameraId] = (cameraCounts[d.cameraId] || 0) + 1;
+ });
+
+ // Normalize density
+ const maxCount = Math.max(...Object.values(cameraCounts), 1);
+ 
+ const hmd: [number, number, number][] = [];
+ const spots: any[] = [];
+ let highestDensityLocation = 'None';
+ let highestDensityValue = 0;
+
+ cameras.forEach(cam => {
+ const count = cameraCounts[cam.id] || 0;
+ if (count > 0) {
+ const intensity = Math.min(1.0, count / Math.max(maxCount, 5)); // Cap to avoid 100% on low traffic
+ 
+ // Exact real data point
+ hmd.push([cam.latitude, cam.longitude, intensity]);
+ 
+ // SIMULATED INTERPOLATION: 
+ // We add a slight geographic scatter around the camera junction strictly for visual heatmap spread. 
+ // The magnitude/density is directly tied to the real detection count at the node.
+ const visualSpread = Math.min(count, 15);
+ for(let i=0; i < visualSpread; i++) {
+ hmd.push([
+ cam.latitude + (Math.random()-0.5)*0.008, 
+ cam.longitude + (Math.random()-0.5)*0.008, 
+ intensity * 0.6
+ ]);
+ }
+
+ if (intensity > highestDensityValue) {
+ highestDensityValue = intensity;
+ highestDensityLocation = cam.location;
+ }
+
+ let status = 'Normal';
+ if (intensity > 0.7) status = 'Critical';
+ else if (intensity > 0.4) status = 'High';
+ else if (intensity > 0.2) status = 'Moderate';
+
+ if (intensity > 0.2) {
+ spots.push({
+ name: cam.location,
+ delay: `${Math.round(intensity * 12)} mins delay`,
+ status,
+ intensity
+ });
+ }
+ }
+ });
+
+ spots.sort((a, b) => b.intensity - a.intensity);
+
+ return { 
+ heatmapData: hmd,
+ hotspotDataList: spots.slice(0, 5),
+ vehiclesDetected: validDets.length,
+ avgFlow: validDets.length > 0 ? Math.round(validDets.length / Object.keys(cameraCounts).length) : 0,
+ maxDensityZone: highestDensityLocation
+ };
+ }, [detections, cameras, parsedTimeFilter]);
 
  const vehicleTypeData = React.useMemo(() => {
  const counts: Record<string, number> = { 'Car': 0, 'SUV': 0, 'Truck': 0, 'Two Wheeler': 0, 'Bus': 0, 'Others': 0 };
@@ -62,22 +155,32 @@ export default function TrafficAnalytics() {
  {/* Header & Filters */}
  <Card variant="glow" className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 p-4">
  <div>
- <h2 className="text-xl font-bold text-white flex items-center gap-2"><BarChart3 size={24} className="text-blue-500" /> Traffic Analytics</h2>
- <p className="text-xs text-slate-400 font-medium mt-1">City-wide data visualization and trends</p>
+ <h2 className="text-xl font-bold text-white flex items-center gap-2"><Activity size={24} className="text-blue-500" /> City-Wide Traffic Analytics</h2>
+ <p className="text-xs text-slate-400 font-medium mt-1">Movement and flow visualization based on live ANPR detections</p>
  </div>
  
  <div className="flex flex-col sm:flex-row gap-3">
  <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-800/60 rounded-lg px-3 py-2">
- <Calendar className="w-4 h-4 text-slate-400" />
- <select className="bg-transparent text-sm font-semibold text-slate-300 outline-none w-full cursor-pointer">
- <option>Today</option>
- <option>Last 7 Days</option>
- <option>Last 30 Days</option>
+ <Clock className="w-4 h-4 text-blue-400" />
+ <select 
+ value={timeFilter}
+ onChange={(e) => setTimeFilter(e.target.value)}
+ className="bg-transparent text-sm font-semibold text-slate-300 outline-none w-full cursor-pointer"
+ >
+ <option>Live (Last 5m)</option>
+ <option>Last 15 min</option>
+ <option>Last 30 min</option>
+ <option>Last 1 hour</option>
+ <option>All Day</option>
  </select>
  </div>
  <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-800/60 rounded-lg px-3 py-2">
  <Map className="w-4 h-4 text-slate-400" />
- <select className="bg-transparent text-sm font-semibold text-slate-300 outline-none w-full cursor-pointer">
+ <select 
+ value={zoneFilter}
+ onChange={(e) => setZoneFilter(e.target.value)}
+ className="bg-transparent text-sm font-semibold text-slate-300 outline-none w-full cursor-pointer"
+ >
  <option>All Zones (Pune)</option>
  <option>West Zone</option>
  <option>East Zone</option>
@@ -86,57 +189,134 @@ export default function TrafficAnalytics() {
  </div>
  </Card>
 
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 pb-6 overflow-y-auto custom-scrollbar">
- 
- {/* KPI Row spanning full width */}
- <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+ {/* KPIs */}
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
  <Card variant="glass">
- <CardContent className="p-6 flex items-center gap-4">
- <div className="w-12 h-12 rounded-full bg-blue-900/50 text-blue-400 flex items-center justify-center shrink-0">
- <Activity size={24} />
+ <CardContent className="p-4 flex items-center gap-4">
+ <div className="w-10 h-10 rounded-full bg-blue-900/50 text-blue-400 flex items-center justify-center shrink-0">
+ <BarChart3 size={20} />
  </div>
  <div>
- <div className="text-sm font-bold text-slate-400">Avg Travel Time</div>
- <div className="text-2xl font-black text-white">24.5 mins</div>
- <div className="text-xs font-semibold text-emerald-400 flex items-center mt-1"><TrendingUp size={12} className="mr-1" /> -2% vs avg</div>
+ <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Vehicles Detected</div>
+ <div className="text-xl font-black text-white">{vehiclesDetected.toLocaleString()}</div>
  </div>
  </CardContent>
  </Card>
  
  <Card variant="glass">
- <CardContent className="p-6 flex items-center gap-4">
- <div className="w-12 h-12 rounded-full bg-cyan-900/50 text-cyan-400 flex items-center justify-center shrink-0">
- <BarChart3 size={24} />
+ <CardContent className="p-4 flex items-center gap-4">
+ <div className="w-10 h-10 rounded-full bg-emerald-900/50 text-emerald-400 flex items-center justify-center shrink-0">
+ <Activity size={20} />
  </div>
  <div>
- <div className="text-sm font-bold text-slate-400">Total Volume</div>
- <div className="text-2xl font-black text-white">7,200</div>
- <div className="text-xs font-semibold text-emerald-400 flex items-center mt-1"><TrendingUp size={12} className="mr-1" /> +5% vs avg</div>
+ <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Traffic Flow</div>
+ <div className="text-xl font-black text-white">{avgFlow} <span className="text-xs font-normal text-slate-400">veh/cam</span></div>
  </div>
  </CardContent>
  </Card>
  
  <Card variant="glass">
- <CardContent className="p-6 flex items-center gap-4">
- <div className="w-12 h-12 rounded-full bg-amber-900/50 text-amber-400 flex items-center justify-center shrink-0">
- <AlertTriangle size={24} />
+ <CardContent className="p-4 flex items-center gap-4">
+ <div className="w-10 h-10 rounded-full bg-amber-900/50 text-amber-400 flex items-center justify-center shrink-0">
+ <AlertTriangle size={20} />
  </div>
  <div>
- <div className="text-sm font-bold text-slate-400">Congestion Level</div>
- <div className="text-2xl font-black text-white">Moderate</div>
- <div className="text-xs font-semibold text-amber-400 flex items-center mt-1"><Clock size={12} className="mr-1" /> Peak hours approaching</div>
+ <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Hotspots</div>
+ <div className="text-xl font-black text-white">{hotspotDataList.length}</div>
+ </div>
+ </CardContent>
+ </Card>
+
+ <Card variant="glass">
+ <CardContent className="p-4 flex items-center gap-4">
+ <div className="w-10 h-10 rounded-full bg-red-900/50 text-red-400 flex items-center justify-center shrink-0">
+ <Map size={20} />
+ </div>
+ <div>
+ <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Most Congested</div>
+ <div className="text-[13px] leading-tight font-black text-white mt-1">{maxDensityZone}</div>
  </div>
  </CardContent>
  </Card>
  </div>
 
- {/* Charts */}
- <Card variant="glass" className="lg:col-span-2 flex flex-col min-h-[400px]">
- <CardHeader>
- <CardTitle className="text-sm font-bold text-white">Yesterday's Hourly Traffic Volume</CardTitle>
+ {/* Main Map Area */}
+ <div className="flex flex-col lg:flex-row gap-6">
+ <Card variant="glass" className="flex-1 flex flex-col h-[500px] relative overflow-hidden">
+ <div className="p-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center z-10">
+ <div className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+ Traffic Flow Heatmap
+ <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[10px]">
+ Filtered: {timeFilter}
+ </span>
+ </div>
+ 
+ <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800">
+ <span>Low</span>
+ <div className="w-16 h-2 rounded bg-gradient-to-r from-green-500 via-amber-500 to-red-500"></div>
+ <span>High</span>
+ </div>
+ </div>
+ 
+ <div className="flex-1 w-full bg-slate-900 z-0">
+ <CityMap 
+ customHeatmapData={heatmapData}
+ layers={{ trafficDensity: true, congestion: false, cameraLocations: true }} 
+ />
+ </div>
+
+ <div className="absolute bottom-4 left-4 right-4 md:right-auto md:w-80 bg-slate-900/90 border border-slate-800 p-3 rounded-lg shadow-xl z-[1000] backdrop-blur-sm">
+ <div className="flex items-start gap-2 mb-2">
+ <Info size={14} className="text-blue-400 mt-0.5" />
+ <p className="text-[10px] text-slate-300 leading-tight">
+ <span className="font-bold text-white">Data Note:</span> Heatmap is generated exclusively from live ANPR detection counts at existing camera junctions. Inter-camera density is a simulated visual interpolation bounded around nodes.
+ </p>
+ </div>
+ </div>
+ </Card>
+
+ {/* Hotspots List */}
+ <Card variant="glass" className="w-full lg:w-96 flex flex-col shrink-0">
+ <CardHeader className="pb-2">
+ <CardTitle className="text-sm font-bold text-white">Critical Hotspots ({timeFilter})</CardTitle>
  </CardHeader>
- <CardContent className="p-6 flex-1 flex flex-col">
- <div className="w-full flex-1 min-h-[300px]">
+ <CardContent className="p-0 flex-1 overflow-y-auto custom-scrollbar">
+ {hotspotDataList.length === 0 ? (
+ <div className="p-8 text-center text-slate-500 font-medium text-sm">
+ No congestion hotspots detected in this time window.
+ </div>
+ ) : (
+ <div className="divide-y divide-slate-800">
+ {hotspotDataList.map((spot, i) => (
+ <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors">
+ <div className="flex items-center gap-3">
+ <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold border border-slate-700">
+ {i+1}
+ </div>
+ <div className="font-bold text-slate-200 text-sm">{spot.name}</div>
+ </div>
+ <div className="flex items-center gap-4">
+ <div className="text-[10px] font-semibold text-slate-400 whitespace-nowrap">{spot.delay}</div>
+ <div className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${spot.status === 'Critical' ? 'bg-red-900/30 text-red-400 border border-red-500/20' : spot.status === 'High' ? 'bg-amber-900/30 text-amber-400 border border-amber-500/20' : 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/20'}`}>
+ {spot.status}
+ </div>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+ </CardContent>
+ </Card>
+ </div>
+
+ {/* Charts (Preserved) */}
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+ <Card variant="glass" className="flex flex-col min-h-[300px]">
+ <CardHeader>
+ <CardTitle className="text-sm font-bold text-white">Historical Volume (Past 24h)</CardTitle>
+ </CardHeader>
+ <CardContent className="p-4 flex-1 flex flex-col">
+ <div className="w-full flex-1 min-h-[200px]">
  <ResponsiveContainer width="100%" height="100%">
  <AreaChart data={hourlyTrafficData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
  <defs>
@@ -149,84 +329,40 @@ export default function TrafficAnalytics() {
  <stop offset="95%" stopColor="#1769FF" stopOpacity={0}/>
  </linearGradient>
  </defs>
- <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
- <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }} dy={10} />
- <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }} />
- <Tooltip 
- contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.5)', fontWeight: 'bold' }}
- />
- <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }} />
- <Area type="monotone" dataKey="yesterday" name="Yesterday" stroke="#94a3b8" strokeWidth={3} fillOpacity={1} fill="url(#colorYesterday)" />
- <Area type="monotone" dataKey="today" name="Today" stroke="#1769FF" strokeWidth={3} fillOpacity={1} fill="url(#colorToday)" />
+ <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
+ <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={10} />
+ <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+ <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '8px' }} />
+ <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }} />
+ <Area type="monotone" dataKey="yesterday" name="Yesterday" stroke="#64748b" strokeWidth={2} fillOpacity={1} fill="url(#colorYesterday)" />
+ <Area type="monotone" dataKey="today" name="Today" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
  </AreaChart>
  </ResponsiveContainer>
  </div>
  </CardContent>
  </Card>
 
- <Card variant="glass" className="flex flex-col min-h-[400px]">
+ <Card variant="glass" className="flex flex-col min-h-[300px]">
  <CardHeader>
- <CardTitle className="text-sm font-bold text-white">Vehicle Demographics</CardTitle>
+ <CardTitle className="text-sm font-bold text-white">Fleet Composition</CardTitle>
  </CardHeader>
- <CardContent className="p-6 flex-1 flex flex-col items-center">
- <div className="w-full flex-1 min-h-[250px]">
+ <CardContent className="p-4 flex-1 flex flex-col items-center">
+ <div className="w-full flex-1 min-h-[200px]">
  <ResponsiveContainer width="100%" height="100%">
  <PieChart>
- <Pie
- data={vehicleTypeData}
- innerRadius={60}
- outerRadius={80}
- paddingAngle={2}
- dataKey="value"
- stroke="none"
- >
+ <Pie data={vehicleTypeData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
  {vehicleTypeData.map((entry, index) => (
  <Cell key={`cell-${index}`} fill={entry.color} />
  ))}
  </Pie>
- <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.5)' }} />
+ <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '8px' }} />
  </PieChart>
  </ResponsiveContainer>
  </div>
- <div className="w-full space-y-3 mt-4 overflow-y-auto custom-scrollbar pr-1">
- {vehicleTypeData.map(item => (
- <div key={item.name} className="flex items-center justify-between text-sm">
- <div className="flex items-center font-semibold text-slate-300">
- <div className="w-3 h-3 rounded-sm mr-3 shadow-sm" style={{ backgroundColor: item.color }}></div>
- {item.name}
- </div>
- <div className="font-black text-white">{item.value}%</div>
- </div>
- ))}
- </div>
  </CardContent>
  </Card>
+ </div>
 
- {/* Hotspots */}
- <Card variant="glass" className="lg:col-span-3">
- <CardHeader>
- <CardTitle className="text-sm font-bold text-white">Current Road Hotspots</CardTitle>
- </CardHeader>
- <CardContent className="p-0">
- <div className="divide-y divide-slate-800">
- {hotspotData.map((spot, i) => (
- <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors">
- <div className="flex items-center gap-4">
- <div className="font-bold text-slate-500 w-6">#{i+1}</div>
- <div className="font-bold text-white">{spot.name}</div>
- </div>
- <div className="flex items-center gap-8">
- <div className="text-sm font-semibold text-slate-400">Delay: <span className="text-slate-200">{spot.delay}</span></div>
- <div className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded ${spot.status === 'Critical' ? 'bg-red-900/30 text-red-400' : spot.status === 'High' ? 'bg-amber-900/30 text-amber-400' : 'bg-emerald-900/30 text-emerald-400'}`}>
- {spot.status}
- </div>
- </div>
- </div>
- ))}
- </div>
- </CardContent>
- </Card>
- </div>
  </div>
  );
 }
