@@ -8,6 +8,18 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 
+const CITY_AREAS: Record<string, [number, number]> = {
+ hinjawadi: [18.5905, 73.7389],
+ shivajinagar: [18.5309, 73.8472],
+ kothrud: [18.5074, 73.8077],
+ viman_nagar: [18.5665, 73.9122],
+ baner: [18.5590, 73.7868],
+ kalyani_nagar: [18.5475, 73.9033],
+ hadapsar: [18.5089, 73.9259],
+ pimpri: [18.6279, 73.7997],
+ koregaon_park: [18.5362, 73.8939]
+};
+
 export default function VehicleRoutes() {
  const { vehicles, detections, cameras } = useStore();
  const [searchParams] = useSearchParams();
@@ -15,6 +27,7 @@ export default function VehicleRoutes() {
  // Read plate from URL, fallback to default
  const [searchTerm, setSearchTerm] = useState(searchParams.get('plate') || 'MH12AB1234');
  const [routeProgress, setRouteProgress] = useState(100);
+ const [selectedArea, setSelectedArea] = useState<string>('all');
 
  // If the URL changes while we are on the page, update the tracking
  useEffect(() => {
@@ -70,12 +83,21 @@ export default function VehicleRoutes() {
  <div className="flex gap-2 items-center">
  <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded px-2 py-1 hidden md:flex">
  <MapIcon size={12} className="text-blue-400" />
- <select className="bg-transparent text-[10px] font-bold text-slate-300 outline-none cursor-pointer max-w-[120px]">
+ <select 
+ value={selectedArea}
+ onChange={(e) => setSelectedArea(e.target.value)}
+ className="bg-transparent text-[10px] font-bold text-slate-300 outline-none cursor-pointer max-w-[120px]"
+ >
  <option value="all">Search City Area</option>
  <option value="hinjawadi">Hinjawadi IT Park</option>
  <option value="shivajinagar">Shivajinagar</option>
  <option value="kothrud">Kothrud</option>
- <option value="viman-nagar">Viman Nagar</option>
+ <option value="viman_nagar">Viman Nagar</option>
+ <option value="baner">Baner</option>
+ <option value="kalyani_nagar">Kalyani Nagar</option>
+ <option value="hadapsar">Hadapsar</option>
+ <option value="pimpri">Pimpri-Chinchwad</option>
+ <option value="koregaon_park">Koregaon Park</option>
  </select>
  </div>
  <Badge variant="info">Live Tracking</Badge>
@@ -87,6 +109,7 @@ export default function VehicleRoutes() {
  routePath={routePath}
  routeSequence={routeSequence}
  routeProgress={routeProgress}
+ focusLocation={selectedArea !== 'all' ? CITY_AREAS[selectedArea] : undefined}
  />
  
  {/* Playback Slider Overlay */}

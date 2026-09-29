@@ -101,7 +101,17 @@ const mockCongestionData = [
 import { useStore } from '../../store/store';
 
 // Inside CityMap component (we will replace the CityMap definition block):
-const CityMap = ({ layers, routePath, routeSequence, timeOfDay, routeProgress = 100 }: { layers?: any, routePath?: [number, number][], routeSequence?: any[], timeOfDay?: number, routeProgress?: number }) => {
+const FocusLocation = ({ focusLocation }: { focusLocation?: [number, number] }) => {
+ const map = useMap();
+ useEffect(() => {
+ if (focusLocation) {
+ map.flyTo(focusLocation, 14, { duration: 1.5 });
+ }
+ }, [focusLocation, map]);
+ return null;
+};
+
+const CityMap = ({ layers, routePath, routeSequence, timeOfDay, routeProgress = 100, focusLocation }: { layers?: any, routePath?: [number, number][], routeSequence?: any[], timeOfDay?: number, routeProgress?: number, focusLocation?: [number, number] }) => {
  const [heatmapData, setHeatmapData] = useState<any[]>([]);
  const [congestionData, setCongestionData] = useState<any[]>([]);
  const [detailedRoute, setDetailedRoute] = useState<[number, number][] | null>(null);
@@ -182,6 +192,7 @@ const CityMap = ({ layers, routePath, routeSequence, timeOfDay, routeProgress = 
  zoomControl={true}
  >
  <FitBounds route={routePath} />
+ <FocusLocation focusLocation={focusLocation} />
  <TileLayer
  url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
