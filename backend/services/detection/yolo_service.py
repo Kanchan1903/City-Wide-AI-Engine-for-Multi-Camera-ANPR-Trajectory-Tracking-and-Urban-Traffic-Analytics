@@ -12,18 +12,12 @@ class YoloService:
         self.model = None
         self.model_loaded = False
         # Determine model path
-        if not model_path:
-            # Default custom weights path
-            base_dir = Path(__file__).resolve().parent.parent.parent.parent
-            model_path = os.path.join(base_dir, 'models', 'anpr_yolov8.pt')
-            
         try:
-            if os.path.exists(model_path):
-                self.model = YOLO(model_path)
-                self.model_loaded = True
-                logger.info(f"Loaded YOLO model from {model_path}")
-            else:
-                logger.warning(f"YOLO model weights not found at {model_path}.")
+            from huggingface_hub import hf_hub_download
+            model_path = hf_hub_download(repo_id="Koushim/yolov8-license-plate-detection", filename="best.pt")
+            self.model = YOLO(model_path)
+            self.model_loaded = True
+            logger.info(f"Loaded YOLO model from {model_path}")
         except Exception as e:
             logger.error(f"Failed to load YOLO model: {str(e)}")
             
@@ -54,13 +48,15 @@ class YoloService:
                 "class_id": class_id
             }
             
-            # This logic needs to align with the actual model classes.
-            # If standard yolov8n is used, cars/trucks/buses are 2, 5, 7.
-            # For a custom ANPR model, it might be 0=vehicle, 1=plate.
-            # We'll assume a custom ANPR model logic.
-            if class_id == 0 or class_id in [2, 3, 5, 7]: # standard vehicles + custom vehicle class
-                vehicles.append(det_data)
-            elif class_id == 1 or class_id == 80: # custom plate class
-                plates.append(det_data)
+            # For this license plate model, everything it detects is a plate
+            plates.append(det_data)
+            # We don't have vehicle bounding boxes in this model, so we fake one around the plate
+            # or just leave it empty. We'll add a dummy vehicle box around the plate.
+            margin = 20
+            vehicles.append({
+                "bbox": [max(0, int(x1)-margin), max(0, int(y1)-margin), int(x2)+margin, int(y2)+margin],
+                "confidence": conf,
+                "class_id": 0
+            })
                 
         return vehicles, plates

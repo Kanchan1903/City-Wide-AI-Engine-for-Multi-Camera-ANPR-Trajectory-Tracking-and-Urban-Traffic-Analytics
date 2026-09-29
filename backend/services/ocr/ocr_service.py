@@ -8,13 +8,13 @@ class OCRService:
     def __init__(self, use_gpu: bool = False):
         self.ocr = None
         try:
-            from paddleocr import PaddleOCR
-            self.ocr = PaddleOCR(use_angle_cls=True, lang='en')
-            logger.info("PaddleOCR loaded successfully.")
+            import easyocr
+            self.ocr = easyocr.Reader(['en'], gpu=use_gpu)
+            logger.info("EasyOCR loaded successfully.")
         except ImportError:
-            logger.warning("PaddleOCR not installed.")
+            logger.warning("EasyOCR not installed. Run 'pip install easyocr'.")
         except Exception as e:
-            logger.error(f"Failed to initialize PaddleOCR: {str(e)}")
+            logger.error(f"Failed to initialize EasyOCR: {str(e)}")
 
     def extract_text(self, image: np.ndarray) -> dict:
         """
@@ -22,24 +22,21 @@ class OCRService:
         Returns a dict with raw_text, normalized_text, and confidence.
         """
         if self.ocr is None:
-            raise Exception("PaddleOCR is not initialized. Cannot perform real inference.")
+            raise Exception("EasyOCR is not initialized. Cannot perform real inference.")
             
         try:
-            result = self.ocr.ocr(image, cls=True)
-            if not result or not result[0]:
+            # result is a list of tuples: (bbox, text, prob)
+            result = self.ocr.readtext(image)
+            if not result:
                 return {"raw_text": "", "normalized_text": "", "ocr_confidence": 0.0}
                 
-            # result is a list of lines, each line is [coords, (text, confidence)]
-            # Assuming a license plate crop mostly contains one line of text, we can join them or take the highest confidence one.
-            # Let's join them.
             raw_text = ""
             total_conf = 0.0
             count = 0
             
-            for line in result[0]:
-                text, conf = line[1]
+            for (bbox, text, prob) in result:
                 raw_text += text + " "
-                total_conf += conf
+                total_conf += prob
                 count += 1
                 
             raw_text = raw_text.strip()

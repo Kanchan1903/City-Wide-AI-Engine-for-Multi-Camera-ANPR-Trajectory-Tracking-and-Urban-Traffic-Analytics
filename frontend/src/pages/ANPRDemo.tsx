@@ -40,7 +40,7 @@ export default function ANPRDemo() {
  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
  
  const controller = new AbortController();
- const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+ const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
  let data: any[];
  try {
