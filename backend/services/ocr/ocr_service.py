@@ -56,8 +56,24 @@ class OCRService:
         Normalizes OCR text for Indian License Plates:
         - Uppercase
         - Remove spaces and special characters
+        - Extract only the license plate substring to ignore noise (e.g. 'IND', dealership names)
         """
         text = text.upper()
         # Keep only alphanumeric
-        text = re.sub(r'[^A-Z0-9]', '', text)
-        return text
+        clean_text = re.sub(r'[^A-Z0-9]', '', text)
+        
+        # Search for standard Indian plate pattern: MH12AB1234
+        standard_match = re.search(r'[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}', clean_text)
+        if standard_match:
+            return standard_match.group(0)
+            
+        # Search for BH series pattern: 21BH1234AA
+        bh_match = re.search(r'[0-9]{2}BH[0-9]{4}[A-Z]{1,2}', clean_text)
+        if bh_match:
+            return bh_match.group(0)
+            
+        # Fallback: strip 'IND' if present and return the rest
+        if clean_text.startswith('IND'):
+            clean_text = clean_text[3:]
+            
+        return clean_text
