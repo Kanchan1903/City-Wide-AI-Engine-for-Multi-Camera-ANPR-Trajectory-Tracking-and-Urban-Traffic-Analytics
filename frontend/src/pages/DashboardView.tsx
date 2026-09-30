@@ -10,16 +10,43 @@ import {
   PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Area, AreaChart
 } from 'recharts';
 
-const volumeTrendData = [
-  { time: 'Jan', inbound: 10, outbound: 0 },
-  { time: 'Feb', inbound: 15, outbound: 8 },
-  { time: 'Mar', inbound: 12, outbound: 20 },
-  { time: 'Apr', inbound: 25, outbound: 15 },
-  { time: 'May', inbound: 30, outbound: 28 },
-  { time: 'Jun', inbound: 18, outbound: 35 },
-  { time: 'Jul', inbound: 45, outbound: 25 },
-  { time: 'Aug', inbound: 30, outbound: 10 },
-];
+const volumeTrendDataMap = {
+  DAILY: [
+    { time: '00:00', inbound: 15, outbound: 10 },
+    { time: '04:00', inbound: 8, outbound: 5 },
+    { time: '08:00', inbound: 85, outbound: 70 },
+    { time: '12:00', inbound: 65, outbound: 60 },
+    { time: '16:00', inbound: 90, outbound: 85 },
+    { time: '20:00', inbound: 45, outbound: 40 },
+    { time: '23:59', inbound: 20, outbound: 15 },
+  ],
+  WEEKLY: [
+    { time: 'Mon', inbound: 120, outbound: 110 },
+    { time: 'Tue', inbound: 135, outbound: 125 },
+    { time: 'Wed', inbound: 140, outbound: 130 },
+    { time: 'Thu', inbound: 130, outbound: 120 },
+    { time: 'Fri', inbound: 160, outbound: 150 },
+    { time: 'Sat', inbound: 90, outbound: 85 },
+    { time: 'Sun', inbound: 75, outbound: 70 },
+  ],
+  MONTHLY: [
+    { time: 'Jan', inbound: 10, outbound: 0 },
+    { time: 'Feb', inbound: 15, outbound: 8 },
+    { time: 'Mar', inbound: 12, outbound: 20 },
+    { time: 'Apr', inbound: 25, outbound: 15 },
+    { time: 'May', inbound: 30, outbound: 28 },
+    { time: 'Jun', inbound: 18, outbound: 35 },
+    { time: 'Jul', inbound: 45, outbound: 25 },
+    { time: 'Aug', inbound: 30, outbound: 10 },
+  ],
+  YEARLY: [
+    { time: '2022', inbound: 300, outbound: 280 },
+    { time: '2023', inbound: 450, outbound: 410 },
+    { time: '2024', inbound: 520, outbound: 490 },
+    { time: '2025', inbound: 610, outbound: 580 },
+    { time: '2026', inbound: 700, outbound: 650 },
+  ]
+};
 
 const vehicleTypeData = [
   { name: 'Cars', value: 65, color: '#06b6d4' },
@@ -30,6 +57,7 @@ const vehicleTypeData = [
 
 export default function DashboardView() {
   const { stats, alerts, cameras, detections, vehicles, closeVehicleDrawer } = useStore();
+  const [activeTab, setActiveTab] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'>('MONTHLY');
 
   useEffect(() => {
     closeVehicleDrawer();
@@ -135,10 +163,15 @@ export default function DashboardView() {
             <div className="flex flex-col flex-1 max-w-2xl">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex gap-6 text-xs font-bold text-slate-500">
-                  <span className="cursor-pointer hover:text-white transition-colors">DAILY</span>
-                  <span className="cursor-pointer hover:text-white transition-colors">WEEKLY</span>
-                  <span className="text-cyan-400 border-b-2 border-cyan-400 pb-1 cursor-pointer">MONTHLY</span>
-                  <span className="cursor-pointer hover:text-white transition-colors">YEARLY</span>
+                  {(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'] as const).map(tab => (
+                    <span 
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`cursor-pointer transition-colors ${activeTab === tab ? 'text-cyan-400 border-b-2 border-cyan-400 pb-1' : 'hover:text-white'}`}
+                    >
+                      {tab}
+                    </span>
+                  ))}
                 </div>
                 <div className="flex gap-4 text-xs font-bold text-slate-400">
                   <div className="flex items-center gap-1.5">
@@ -154,7 +187,7 @@ export default function DashboardView() {
               
               <div className="h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={volumeTrendData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                  <AreaChart data={volumeTrendDataMap[activeTab]} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorInbound" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3}/>
