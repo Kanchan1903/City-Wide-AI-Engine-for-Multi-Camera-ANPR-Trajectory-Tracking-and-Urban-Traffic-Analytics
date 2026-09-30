@@ -9,8 +9,8 @@ import ANPRSearch from './pages/ANPRSearch';
 import VehicleRoutes from './pages/VehicleRoutes';
 import TrafficAnalytics from './pages/TrafficAnalytics';
 import AlertsView from './pages/AlertsView';
-import ReportsView from './pages/ReportsView';
 import ANPRDemo from './pages/ANPRDemo';
+import SettingsView from './pages/SettingsView';
 import { AuthProvider } from './context/AuthContext';
 import { useStore } from './store/store';
 
@@ -56,8 +56,7 @@ function App() {
  <Route path="tracking" element={<VehicleRoutes />} />
  <Route path="analytics" element={<TrafficAnalytics />} />
  <Route path="alerts" element={<AlertsView />} />
- <Route path="reports" element={<ReportsView />} />
- <Route path="settings" element={<div className="p-6 text-xl text-slate-500 font-medium">System Settings Under Construction</div>} />
+ <Route path="settings" element={<SettingsView />} />
  <Route path="*" element={<Navigate to="/dashboard" replace />} />
  </Route>
 

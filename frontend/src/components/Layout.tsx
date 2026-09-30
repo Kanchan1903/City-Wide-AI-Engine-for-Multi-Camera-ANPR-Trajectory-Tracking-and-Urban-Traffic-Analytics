@@ -20,16 +20,12 @@ const Layout = () => {
           <SidebarIcon to="/dashboard" icon={<LayoutDashboard size={24} />} exact />
           <SidebarIcon to="/dashboard/analytics" icon={<BarChart2 size={24} />} />
           <SidebarIcon to="/dashboard/cameras" icon={<Users size={24} />} />
-          <SidebarIcon to="/dashboard/reports" icon={<FileText size={24} />} />
           <SidebarIcon to="/dashboard/tracking" icon={<Calendar size={24} />} />
           <SidebarIcon to="/dashboard/alerts" icon={<Bell size={24} />} />
           <SidebarIcon to="/dashboard/settings" icon={<Settings size={24} />} />
         </nav>
 
         <div className="mt-auto flex flex-col gap-8 items-center">
-          <div className="w-12 h-12 rounded-xl bg-slate-800 overflow-hidden border-2 border-cyan-500/50 shadow-md">
-            <img src="https://i.pravatar.cc/150?img=11" alt="User" className="w-full h-full object-cover" />
-          </div>
           <button onClick={() => navigate('/')} className="text-slate-500 hover:text-cyan-400 transition-colors">
             <LogOut size={24} />
           </button>
