@@ -19,12 +19,12 @@ export default function AlertsView() {
  </div>
  
  <div className="flex items-center gap-3">
- <Button variant="outline" className="font-bold text-slate-300 bg-slate-950 border-slate-800">
+ <Button variant="outline" className="font-bold text-slate-300 bg-[#040d1a] border-[#1e3a5f]">
  <Filter size={16} className="mr-2" /> Filter
  </Button>
  <Button 
  onClick={markAllAlertsAsRead}
- className="font-bold text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border-none"
+ className="font-bold text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border-none"
  >
  <CheckCircle size={16} className="mr-2" /> Resolve All
  </Button>
@@ -67,8 +67,8 @@ export default function AlertsView() {
  key={alert.id} 
  className={`flex flex-col overflow-visible min-h-[200px] transition-colors ${
  !alert.read 
- ? 'border-slate-700/60' 
- : 'opacity-70 border-slate-800/50'
+ ? 'border-[#1e3a5f]/60' 
+ : 'opacity-70 border-[#1e3a5f]/50'
  }`}
  >
  {/* Card Header */}
@@ -76,7 +76,7 @@ export default function AlertsView() {
  <div className={`p-3 rounded-full shrink-0 shadow-inner ${
  isCritical ? 'bg-red-900/30 text-red-500 border border-red-900/50' :
  isWarning ? 'bg-amber-900/30 text-amber-500 border border-amber-900/50' :
- 'bg-blue-900/30 text-blue-500 border border-blue-900/50'
+ 'bg-cyan-900/30 text-cyan-400 border border-cyan-900/50'
  }`}>
  <AlertTriangle size={24} />
  </div>
@@ -85,7 +85,7 @@ export default function AlertsView() {
  <div className="font-bold text-white text-base leading-tight truncate">{alert.title}</div>
  </div>
  <div className="text-[10px] font-mono text-slate-400 mb-2">{timeDisplay}</div>
- <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border shadow-sm bg-slate-950 border-slate-700 text-slate-300">
+ <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border shadow-sm bg-[#040d1a] border-[#1e3a5f] text-slate-300">
  {plate}
  </div>
  </div>
@@ -97,7 +97,7 @@ export default function AlertsView() {
  {description}
  </p>
  <div className="text-xs font-bold text-slate-500 mb-4 mt-auto">
- Location: <span className="text-blue-400 font-mono">{locationDisplay}</span>
+ Location: <span className="text-cyan-400 font-mono">{locationDisplay}</span>
  </div>
  </div>
 
@@ -106,7 +106,7 @@ export default function AlertsView() {
  <div className="flex gap-3">
  <Button 
  variant="outline" 
- className="flex-1 h-10 text-sm font-bold border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300"
+ className="flex-1 h-10 text-sm font-bold border-[#1e3a5f] bg-[#081221] hover:bg-[#0a1f3d] text-slate-300"
  onClick={() => alert.plate && useStore.getState().openVehicleDrawer(alert.plate)}
  disabled={!alert.plate}
  >
@@ -122,7 +122,7 @@ export default function AlertsView() {
  ) : (
  <Button 
  disabled
- className="flex-1 h-10 bg-slate-800 text-slate-500 text-sm font-bold border border-slate-700"
+ className="flex-1 h-10 bg-[#081221] text-slate-500 text-sm font-bold border border-[#1e3a5f]"
  >
  Resolved
  </Button>
@@ -133,7 +133,7 @@ export default function AlertsView() {
  );
  })
  ) : (
- <div className="col-span-full p-12 text-center text-slate-400 font-medium bg-slate-900 rounded-xl border border-slate-800">
+ <div className="col-span-full p-12 text-center text-slate-400 font-medium bg-[#081221] rounded-xl border border-[#1e3a5f]">
  No alerts at this time. All systems nominal.
  </div>
  )}

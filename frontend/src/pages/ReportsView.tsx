@@ -24,18 +24,18 @@ export default function ReportsView() {
  <div className="flex flex-col gap-6 h-full animate-in fade-in duration-300">
  
  {/* Header */}
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm">
+ <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-[#081221] p-6 rounded-xl border border-[#1e3a5f] shadow-sm">
  <div>
  <h2 className="text-2xl font-bold text-white flex items-center gap-2"><FileText className="text-cyan-500" /> Automated Reporting</h2>
  <p className="text-sm text-slate-400 font-medium mt-1">Generate and export system analytics</p>
  </div>
  
  <div className="flex items-center gap-3">
- <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 h-10">
+ <div className="flex items-center gap-2 bg-[#040d1a] border border-[#1e3a5f] rounded-lg px-3 py-2 h-10">
  <Calendar className="w-4 h-4 text-slate-400" />
  <span className="text-sm font-semibold text-slate-300">Last 7 Days</span>
  </div>
- <Button variant="outline" className="font-bold text-slate-300 bg-slate-900/50 border-slate-800 h-10">
+ <Button variant="outline" className="font-bold text-slate-300 bg-[#040d1a] border-[#1e3a5f] h-10">
  <Filter size={16} className="mr-2" /> Filters
  </Button>
  </div>
@@ -45,9 +45,9 @@ export default function ReportsView() {
  <div className="flex-1 overflow-y-auto custom-scrollbar pb-6">
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  {reportTypes.map(report => (
- <div key={report.id} className="bg-slate-900 rounded-xl border border-slate-800 shadow-sm p-6 flex flex-col hover:shadow-md transition-shadow">
+ <div key={report.id} className="bg-[#081221] rounded-xl border border-[#1e3a5f] shadow-sm p-6 flex flex-col hover:shadow-md transition-shadow">
  
- <div className="w-12 h-12 rounded-xl bg-blue-900/30 text-blue-400 flex items-center justify-center mb-4">
+ <div className="w-12 h-12 rounded-xl bg-cyan-900/30 text-cyan-400 flex items-center justify-center mb-4">
  <FileText size={24} />
  </div>
  
@@ -58,7 +58,7 @@ export default function ReportsView() {
  <Button 
  onClick={() => handleGenerate(report.id)}
  disabled={generating !== null}
- className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold h-11"
+ className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold h-11"
  >
  {generating === report.id ? (
  <><Loader2 size={18} className="mr-2 animate-spin" /> Generating...</>
@@ -68,10 +68,10 @@ export default function ReportsView() {
  </Button>
  
  <div className="grid grid-cols-2 gap-3">
- <Button variant="outline" className="w-full font-bold text-slate-300 border-slate-800 bg-slate-900/50 hover:bg-slate-900 hover:text-slate-900" disabled={generating !== null}>
+ <Button variant="outline" className="w-full font-bold text-slate-300 border-[#1e3a5f] bg-[#040d1a] hover:bg-[#0a1f3d] hover:text-white" disabled={generating !== null}>
  <FileIcon size={16} className="mr-2 text-red-500" /> PDF
  </Button>
- <Button variant="outline" className="w-full font-bold text-slate-300 border-slate-800 bg-slate-900/50 hover:bg-slate-900 hover:text-slate-900" disabled={generating !== null}>
+ <Button variant="outline" className="w-full font-bold text-slate-300 border-[#1e3a5f] bg-[#040d1a] hover:bg-[#0a1f3d] hover:text-white" disabled={generating !== null}>
  <FileSpreadsheet size={16} className="mr-2 text-emerald-500" /> CSV
  </Button>
  </div>

@@ -59,7 +59,7 @@ export default function VehicleRoutes() {
  {/* Header */}
  <Card variant="glow" className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 p-4">
  <div>
- <h2 className="text-xl font-bold text-white flex items-center gap-2"><MapIcon size={24} className="text-blue-400" /> GIS City Tracking</h2>
+ <h2 className="text-xl font-bold text-white flex items-center gap-2"><MapIcon size={24} className="text-cyan-400" /> GIS City Tracking</h2>
  <p className="text-xs text-slate-400 font-medium mt-1">Multi-camera trajectory reconstruction</p>
  </div>
  
@@ -70,7 +70,7 @@ export default function VehicleRoutes() {
  placeholder="Search vehicle to track..." 
  value={searchTerm}
  onChange={e => setSearchTerm(e.target.value)}
- className="pl-9 pr-4 py-2 border border-slate-800 rounded-lg text-sm w-full md:w-64 focus:border-blue-500 focus:ring-1 focus:ring-[#1769FF] outline-none uppercase font-bold text-white"
+ className="bg-[#040d1a] pl-9 pr-4 py-2 border border-[#1e3a5f] rounded-lg text-sm w-full md:w-64 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 outline-none uppercase font-bold text-white placeholder:text-slate-500"
  />
  </div>
  </Card>
@@ -78,11 +78,11 @@ export default function VehicleRoutes() {
  <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-[500px]">
  {/* Left/Center: Map */}
  <Card variant="glass" className="flex-1 flex flex-col overflow-hidden">
- <div className="p-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+ <div className="p-3 border-b border-[#1e3a5f] bg-[#091a33]/50 flex justify-between items-center">
  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Trajectory Map</div>
  <div className="flex gap-2 items-center">
- <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded px-2 py-1 hidden md:flex">
- <MapIcon size={12} className="text-blue-400" />
+ <div className="flex items-center gap-1.5 bg-[#081221]/80 border border-[#1e3a5f]/80 rounded px-2 py-1 hidden md:flex">
+ <MapIcon size={12} className="text-cyan-400" />
  <select 
  value={selectedArea}
  onChange={(e) => setSelectedArea(e.target.value)}
@@ -103,7 +103,7 @@ export default function VehicleRoutes() {
  <Badge variant="info">Live Tracking</Badge>
  </div>
  </div>
- <div className="flex-1 relative bg-slate-900">
+ <div className="flex-1 relative bg-[#040d1a]">
  <CityMap 
  layers={{ trafficDensity: false, congestion: false, cameraLocations: true }} 
  routePath={routePath}
@@ -117,7 +117,7 @@ export default function VehicleRoutes() {
  <Card variant="glow" className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md p-4 z-[1000] flex flex-col gap-3">
  <div className="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wider">
  <span>Start</span>
- <span className="text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">Scrub Timeline</span>
+ <span className="text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">Scrub Timeline</span>
  <span>End</span>
  </div>
  <input 
@@ -125,7 +125,7 @@ export default function VehicleRoutes() {
  min="0" max="100" 
  value={routeProgress} 
  onChange={(e) => setRouteProgress(Number(e.target.value))}
- className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#1769FF]"
+ className="w-full h-2 bg-[#081221] rounded-lg appearance-none cursor-pointer accent-cyan-500"
  />
  </Card>
  )}
@@ -138,7 +138,7 @@ export default function VehicleRoutes() {
  <>
  {/* Vehicle Summary */}
  <Card variant="glass" className="overflow-hidden">
- <div className="p-4 border-b border-slate-800 bg-slate-800 text-white flex justify-between items-start">
+ <div className="p-4 border-b border-[#1e3a5f] bg-[#081221] text-white flex justify-between items-start">
  <div>
  <div className="text-[10px] font-bold text-cyan-500 uppercase tracking-wider mb-1">Target Tracked</div>
  <div className="text-2xl font-black">{vehicle.plate}</div>
@@ -147,7 +147,7 @@ export default function VehicleRoutes() {
  <img src={vehicle.img} alt="Vehicle" className="w-full h-full object-cover" />
  </div>
  </div>
- <div className="p-4 bg-slate-900/50 grid grid-cols-2 gap-4">
+ <div className="p-4 bg-[#091a33]/50 grid grid-cols-2 gap-4">
  <div>
  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Make/Model</div>
  <div className="text-sm font-bold text-slate-200">{vehicle.make}</div>
@@ -165,25 +165,25 @@ export default function VehicleRoutes() {
  <Clock size={14} className="mr-2" /> Detection Timeline
  </h3>
  
- <div className="relative border-l-2 border-blue-500/20 ml-3 space-y-6">
+ <div className="relative border-l-2 border-cyan-500/20 ml-3 space-y-6">
  {history.map((det, i) => {
  const cam = cameras.find(c => c.id === det.cameraId);
  return (
  <div key={det.id} className="relative pl-6 group">
- <div className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-2 border-white shadow-sm transition-colors ${i === history.length - 1 ? 'bg-blue-500' : 'bg-slate-300 group-hover:bg-cyan-500'}`}></div>
- <Card variant="glass" className="p-3 group-hover:border-blue-500/30 transition-colors shadow-none">
+ <div className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-2 border-[#040d1a] shadow-[0_0_8px_rgba(6,182,212,0.4)] transition-colors ${i === history.length - 1 ? 'bg-cyan-500' : 'bg-slate-500 group-hover:bg-cyan-400'}`}></div>
+ <Card variant="glass" className="p-3 group-hover:border-cyan-500/30 transition-colors shadow-none">
  <div className="flex justify-between items-start mb-1">
  <span className="font-bold text-white text-sm flex items-center">
  {cam?.id || det.cameraId} 
  {i === history.length - 1 && <span className="ml-2 text-[9px] bg-red-900/30 text-red-400 px-1 py-0.5 rounded font-black uppercase">Last Seen</span>}
  </span>
- <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">{det.timestamp}</span>
+ <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">{det.timestamp}</span>
  </div>
  <div className="text-xs font-medium text-slate-300 mb-2 flex flex-col gap-1">
  <div className="flex items-center"><Navigation size={10} className="mr-1 text-slate-400" /> {det.location}</div>
  <div className="flex gap-2 mt-1">
  <Badge variant="success" className="text-[9px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Conf: {(det.confidence * 100).toFixed(0)}%</Badge>
- <Badge variant="info" className="text-[9px] bg-blue-500/10 text-blue-400 border-blue-500/20">{det.direction}</Badge>
+ <Badge variant="info" className="text-[9px] bg-cyan-500/10 text-cyan-400 border-cyan-500/20">{det.direction}</Badge>
  </div>
  </div>
  </Card>

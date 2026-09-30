@@ -18,10 +18,10 @@ export function Button({
  className={cn(
  "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none",
  {
- 'bg-cyan-500 hover:from-blue-500 hover:to-indigo-500 text-white shadow-[0_4px_15px_rgba(79,70,229,0.3)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.4)]': variant === 'primary',
- 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700': variant === 'secondary',
- 'bg-transparent border border-slate-700 hover:bg-slate-800 hover:border-slate-600 text-slate-300': variant === 'outline',
- 'bg-transparent hover:bg-slate-800/50 text-slate-400 hover:text-white': variant === 'ghost',
+ 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_4px_12px_rgba(6,182,212,0.15)] hover:shadow-[0_6px_16px_rgba(6,182,212,0.25)]': variant === 'primary',
+ 'bg-[#0a1f3d]/80 hover:bg-[#1e3a5f]/80 text-cyan-50 border border-[#1e3a5f]': variant === 'secondary',
+ 'bg-transparent border border-[#1e3a5f] hover:bg-[#0a1f3d] hover:border-cyan-800 text-slate-300 hover:text-white': variant === 'outline',
+ 'bg-transparent hover:bg-[#091a33] text-slate-400 hover:text-white': variant === 'ghost',
  'bg-red-600 hover:bg-red-500 text-white shadow-[0_4px_10px_rgba(239,68,68,0.3)]': variant === 'danger',
  'h-8 px-3 text-sm': size === 'sm',
  'h-10 px-4 py-2': size === 'md',

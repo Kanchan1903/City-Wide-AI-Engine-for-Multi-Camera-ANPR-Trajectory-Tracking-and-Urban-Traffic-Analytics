@@ -23,9 +23,9 @@ const hourlyTrafficData = [
 ];
 
 const fallbackVehicleTypeData = [
- { name: 'Car', value: 62, color: '#1769FF' },
- { name: 'Two Wheeler', value: 24, color: '#00B8D9' },
- { name: 'Bus', value: 6, color: '#0B1730' },
+ { name: 'Car', value: 62, color: '#06b6d4' },
+ { name: 'Two Wheeler', value: 24, color: '#22d3ee' },
+ { name: 'Bus', value: 6, color: '#1e3a5f' },
  { name: 'Truck', value: 5, color: '#ef4444' },
  { name: 'Others', value: 3, color: '#94a3b8' },
 ];
@@ -142,9 +142,9 @@ export default function TrafficAnalytics() {
  if (total === 0) return fallbackVehicleTypeData;
  
  return [
- { name: 'Car/SUV', value: Math.round(((counts['Car'] + counts['SUV']) / total) * 100) || 62, color: '#1769FF' },
- { name: 'Two Wheeler', value: Math.round((counts['Two Wheeler'] / total) * 100) || 24, color: '#00B8D9' },
- { name: 'Bus', value: Math.round((counts['Bus'] / total) * 100) || 6, color: '#0B1730' },
+ { name: 'Car/SUV', value: Math.round(((counts['Car'] + counts['SUV']) / total) * 100) || 62, color: '#06b6d4' },
+ { name: 'Two Wheeler', value: Math.round((counts['Two Wheeler'] / total) * 100) || 24, color: '#22d3ee' },
+ { name: 'Bus', value: Math.round((counts['Bus'] / total) * 100) || 6, color: '#1e3a5f' },
  { name: 'Truck', value: Math.round((counts['Truck'] / total) * 100) || 5, color: '#ef4444' },
  { name: 'Others', value: Math.round((counts['Others'] / total) * 100) || 3, color: '#94a3b8' },
  ].filter(item => item.value > 0);
@@ -155,13 +155,13 @@ export default function TrafficAnalytics() {
  {/* Header & Filters */}
  <Card variant="glow" className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 p-4">
  <div>
- <h2 className="text-xl font-bold text-white flex items-center gap-2"><Activity size={24} className="text-blue-500" /> City-Wide Traffic Analytics</h2>
+ <h2 className="text-xl font-bold text-white flex items-center gap-2"><Activity size={24} className="text-cyan-500" /> City-Wide Traffic Analytics</h2>
  <p className="text-xs text-slate-400 font-medium mt-1">Movement and flow visualization based on live ANPR detections</p>
  </div>
  
  <div className="flex flex-col sm:flex-row gap-3">
- <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-800/60 rounded-lg px-3 py-2">
- <Clock className="w-4 h-4 text-blue-400" />
+ <div className="flex items-center gap-2 bg-[#091a33]/50 border border-[#1e3a5f]/60 rounded-lg px-3 py-2">
+ <Clock className="w-4 h-4 text-cyan-400" />
  <select 
  value={timeFilter}
  onChange={(e) => setTimeFilter(e.target.value)}
@@ -174,7 +174,7 @@ export default function TrafficAnalytics() {
  <option>All Day</option>
  </select>
  </div>
- <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-800/60 rounded-lg px-3 py-2">
+ <div className="flex items-center gap-2 bg-[#091a33]/50 border border-[#1e3a5f]/60 rounded-lg px-3 py-2">
  <Map className="w-4 h-4 text-slate-400" />
  <select 
  value={zoneFilter}
@@ -193,7 +193,7 @@ export default function TrafficAnalytics() {
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
  <Card variant="glass">
  <CardContent className="p-4 flex items-center gap-4">
- <div className="w-10 h-10 rounded-full bg-blue-900/50 text-blue-400 flex items-center justify-center shrink-0">
+ <div className="w-10 h-10 rounded-full bg-cyan-900/50 text-cyan-400 flex items-center justify-center shrink-0">
  <BarChart3 size={20} />
  </div>
  <div>
@@ -243,31 +243,31 @@ export default function TrafficAnalytics() {
  {/* Main Map Area */}
  <div className="flex flex-col lg:flex-row gap-6">
  <Card variant="glass" className="flex-1 flex flex-col h-[500px] relative overflow-hidden">
- <div className="p-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center z-10">
+ <div className="p-3 border-b border-[#1e3a5f] bg-[#091a33]/50 flex justify-between items-center z-10">
  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
  Traffic Flow Heatmap
- <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[10px]">
+ <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded text-[10px]">
  Filtered: {timeFilter}
  </span>
  </div>
  
- <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800">
+ <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 bg-[#040d1a] px-2 py-1 rounded border border-[#1e3a5f]">
  <span>Low</span>
  <div className="w-16 h-2 rounded bg-gradient-to-r from-green-500 via-amber-500 to-red-500"></div>
  <span>High</span>
  </div>
  </div>
  
- <div className="flex-1 w-full bg-slate-900 z-0">
+ <div className="flex-1 w-full bg-[#040d1a] z-0">
  <CityMap 
  customHeatmapData={heatmapData}
  layers={{ trafficDensity: true, congestion: false, cameraLocations: true }} 
  />
  </div>
 
- <div className="absolute bottom-4 left-4 right-4 md:right-auto md:w-80 bg-slate-900/90 border border-slate-800 p-3 rounded-lg shadow-xl z-[1000] backdrop-blur-sm">
+ <div className="absolute bottom-4 left-4 right-4 md:right-auto md:w-80 bg-[#081221]/90 border border-[#1e3a5f] p-3 rounded-lg shadow-xl z-[1000] backdrop-blur-sm">
  <div className="flex items-start gap-2 mb-2">
- <Info size={14} className="text-blue-400 mt-0.5" />
+ <Info size={14} className="text-cyan-400 mt-0.5" />
  <p className="text-[10px] text-slate-300 leading-tight">
  <span className="font-bold text-white">Data Note:</span> Heatmap is generated exclusively from live ANPR detection counts at existing camera junctions. Inter-camera density is a simulated visual interpolation bounded around nodes.
  </p>
@@ -286,11 +286,11 @@ export default function TrafficAnalytics() {
  No congestion hotspots detected in this time window.
  </div>
  ) : (
- <div className="divide-y divide-slate-800">
+ <div className="divide-y divide-[#1e3a5f]">
  {hotspotDataList.map((spot, i) => (
- <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors">
+ <div key={i} className="p-4 flex items-center justify-between hover:bg-[#0a1f3d]/50 transition-colors">
  <div className="flex items-center gap-3">
- <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold border border-slate-700">
+ <div className="w-6 h-6 rounded-full bg-[#081221] text-slate-400 flex items-center justify-center text-xs font-bold border border-[#1e3a5f]">
  {i+1}
  </div>
  <div className="font-bold text-slate-200 text-sm">{spot.name}</div>
@@ -325,17 +325,17 @@ export default function TrafficAnalytics() {
  <stop offset="95%" stopColor="#94a3b8" stopOpacity={0}/>
  </linearGradient>
  <linearGradient id="colorToday" x1="0" y1="0" x2="0" y2="1">
- <stop offset="5%" stopColor="#1769FF" stopOpacity={0.3}/>
- <stop offset="95%" stopColor="#1769FF" stopOpacity={0}/>
+ <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
+ <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
  </linearGradient>
  </defs>
- <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
+ <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e3a5f" />
  <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={10} />
  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
- <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '8px' }} />
+ <Tooltip contentStyle={{ backgroundColor: '#081221', borderColor: '#1e3a5f', color: '#f8fafc', borderRadius: '8px' }} />
  <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }} />
  <Area type="monotone" dataKey="yesterday" name="Yesterday" stroke="#64748b" strokeWidth={2} fillOpacity={1} fill="url(#colorYesterday)" />
- <Area type="monotone" dataKey="today" name="Today" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
+ <Area type="monotone" dataKey="today" name="Today" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
  </AreaChart>
  </ResponsiveContainer>
  </div>
@@ -355,7 +355,7 @@ export default function TrafficAnalytics() {
  <Cell key={`cell-${index}`} fill={entry.color} />
  ))}
  </Pie>
- <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '8px' }} />
+ <Tooltip contentStyle={{ backgroundColor: '#081221', borderColor: '#1e3a5f', color: '#f8fafc', borderRadius: '8px' }} />
  </PieChart>
  </ResponsiveContainer>
  </div>

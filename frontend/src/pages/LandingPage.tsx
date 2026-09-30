@@ -18,7 +18,7 @@ export default function LandingPage() {
  const onlineCameras = cameras.filter(c => c.status === 'online').length;
 
  return (
- <div className="min-h-screen bg-slate-900 text-slate-300 font-sans relative selection:bg-blue-500/30 flex flex-col">
+ <div className="min-h-screen bg-[#020610] text-slate-300 font-sans relative selection:bg-cyan-500/30 flex flex-col">
  <TopNav />
 
  <main className="relative z-10 w-full max-w-[1400px] mx-auto flex-1 flex flex-col px-4 py-12 md:py-8 lg:py-16">
@@ -28,13 +28,13 @@ export default function LandingPage() {
  
  {/* Left Content (5 cols) */}
  <div className="lg:col-span-5 flex flex-col items-start z-20">
- <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-xs font-bold text-slate-300 mb-6 tracking-wide shadow-sm">
- <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div> 
+ <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0a1f3d]/60 border border-[#1e3a5f]/60 text-xs font-bold text-cyan-300 mb-6 tracking-wide shadow-sm">
+ <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]"></div> 
  CITY-WIDE VEHICLE INTELLIGENCE PLATFORM
  </div>
  
  <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-4 drop-shadow-sm leading-tight">
- TRACE<span className="text-blue-500">360</span>
+ TRACE<span className="text-cyan-500">360</span>
  </h1>
  
  <h2 className="text-xl md:text-2xl font-semibold text-slate-300 mb-6 leading-snug">
@@ -48,25 +48,25 @@ export default function LandingPage() {
  <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
  <button 
  onClick={() => navigate('/dashboard')}
- className="w-full sm:w-auto px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 transition-all active:scale-95"
+ className="w-full sm:w-auto px-7 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(6,182,212,0.15)] transition-all active:scale-95"
  >
  Open Dashboard <ChevronRight className="w-5 h-5" />
  </button>
  <button 
  onClick={() => navigate('/dashboard/anpr')}
- className="w-full sm:w-auto px-7 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95"
+ className="w-full sm:w-auto px-7 py-3.5 bg-[#081221] hover:bg-[#0a1f3d] border border-[#1e3a5f] text-slate-300 font-bold rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95"
  >
- <Camera className="w-5 h-5" /> View ANPR Demo
+ <Camera className="w-5 h-5 text-cyan-400" /> View ANPR Demo
  </button>
  </div>
  </div>
 
  {/* Right Content - Map/Dashboard Visualization (7 cols) */}
  <div className="lg:col-span-7 z-20 w-full relative">
- <div className="bg-slate-800 rounded-xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[400px] md:h-[500px] lg:h-[600px] relative">
+ <div className="bg-[#081221] rounded-xl border border-[#1e3a5f] shadow-2xl overflow-hidden flex flex-col h-[400px] md:h-[500px] lg:h-[600px] relative">
  
  {/* Panel Header */}
- <div className="h-10 bg-slate-800 flex items-center justify-between px-4 shrink-0 border-b border-slate-800">
+ <div className="h-10 bg-[#091a33] flex items-center justify-between px-4 shrink-0 border-b border-[#1e3a5f]">
  <div className="flex items-center gap-3">
  <div className="flex gap-1.5">
  <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
@@ -88,7 +88,7 @@ export default function LandingPage() {
  </div>
  
  {/* Main Visualization Stage */}
- <div className="flex-1 relative bg-slate-900 overflow-hidden">
+ <div className="flex-1 relative bg-[#040d1a] overflow-hidden">
  
  {/* SVG Map Layer */}
  <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" viewBox="0 0 800 500">
@@ -256,11 +256,11 @@ function StatCard({ title, value, sub, icon, onClick, delay = 0 }: { title: stri
    initial={{ opacity: 0, y: 20 }}
    animate={{ opacity: 1, y: 0 }}
    transition={{ duration: 0.4, delay }}
-   className={`bg-slate-800 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between group hover:border-slate-700 transition-all ${onClick ? 'cursor-pointer hover:shadow-[0_10px_25px_-5px_rgba(59,130,246,0.15)]' : ''}`}
+   className={`bg-[#081221] border border-[#1e3a5f] rounded-xl p-5 shadow-lg flex flex-col justify-between group hover:border-cyan-500/30 transition-all ${onClick ? 'cursor-pointer hover:shadow-[0_10px_25px_-5px_rgba(6,182,212,0.15)]' : ''}`}
  >
  <div className="flex justify-between items-start mb-4">
  <h3 className="text-slate-400 text-sm font-semibold">{title}</h3>
- <div className="p-2 bg-slate-800/50 rounded-lg group-hover:bg-slate-800 transition-colors">
+ <div className="p-2 bg-[#091a33]/50 rounded-lg group-hover:bg-[#091a33] transition-colors border border-transparent group-hover:border-[#1e3a5f]/50">
  {icon}
  </div>
  </div>

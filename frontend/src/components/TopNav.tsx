@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Shield, Sun, Moon } from 'lucide-react';
+import { Cctv, Sun, Moon } from 'lucide-react';
 import { useStore } from '../store/store';
 
 export default function TopNav() {
@@ -15,7 +15,7 @@ export default function TopNav() {
  <div className="flex items-center justify-start shrink-0 mr-2 lg:mr-4">
  <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/landing')}>
  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-md border border-blue-500">
- <Shield className="w-4 h-4 text-white" />
+ <Cctv className="w-4 h-4 text-white" />
  </div>
  <span className="text-xl font-extrabold tracking-tight text-white">
  TRACE360

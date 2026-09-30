@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, User as UserIcon, Lock, ArrowRight, Video, Car, Activity } from 'lucide-react';
+import { Cctv, User as UserIcon, Lock, ArrowRight, Video, Car, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
 
@@ -74,7 +74,7 @@ export default function LoginPage() {
              transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <div className="w-16 h-16 rounded-2xl bg-[#091a33] border border-[#1e3a5f] flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.15)] mb-8">
-              <Shield className="w-8 h-8 text-cyan-400 drop-shadow-md" />
+              <Cctv className="w-8 h-8 text-cyan-400 drop-shadow-md" />
             </div>
             
             <h1 className="text-5xl xl:text-6xl font-extrabold text-white tracking-tight mb-4">
@@ -119,7 +119,7 @@ export default function LoginPage() {
             <motion.div variants={containerVariants} initial="hidden" animate="visible" className="mb-10">
               <motion.div variants={itemVariants} className="lg:hidden flex justify-center mb-6">
                 <div className="w-14 h-14 rounded-2xl bg-[#091a33] border border-[#1e3a5f] flex items-center justify-center shadow-lg">
-                  <Shield className="w-7 h-7 text-cyan-400" />
+                  <Cctv className="w-7 h-7 text-cyan-400" />
                 </div>
               </motion.div>
               <motion.h2 variants={itemVariants} className="text-3xl font-bold text-white mb-2 text-center lg:text-left">Sign In</motion.h2>

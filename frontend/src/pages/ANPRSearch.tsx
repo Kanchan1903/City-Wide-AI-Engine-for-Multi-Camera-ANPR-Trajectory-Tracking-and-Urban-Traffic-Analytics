@@ -167,18 +167,18 @@ export default function ANPRSearch() {
  
  <div className="flex flex-col md:flex-row gap-4">
  <div className="flex-1 relative">
- <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
+ <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cyan-400" />
  <input 
  type="text" 
  placeholder="Enter vehicle number (e.g. MH12AB1234)..." 
  value={searchTerm}
  onChange={e => setSearchTerm(e.target.value)}
- className="pl-12 pr-4 py-3.5 border-2 border-slate-800 rounded-lg text-lg font-bold w-full focus:border-blue-500 focus:ring-4 focus:ring-[#1769FF]/10 outline-none transition-all placeholder:font-normal placeholder:text-slate-400 text-white uppercase"
+ className="bg-[#040d1a] pl-12 pr-4 py-3.5 border border-[#1e3a5f] rounded-lg text-lg font-bold w-full focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 outline-none transition-all placeholder:font-normal placeholder:text-slate-500 text-white uppercase"
  />
  {searchTerm && (
  <button 
  onClick={() => setSearchTerm('')} 
- className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+ className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
  >
  <X className="w-5 h-5" />
  </button>
@@ -190,9 +190,9 @@ export default function ANPRSearch() {
  </div>
 
  {/* Filters */}
- <div className="flex flex-wrap items-center gap-3 mt-5 pt-5 border-t border-slate-800">
- <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700/80 rounded-md px-3 py-1.5 hover:border-slate-600 transition-colors">
- <Calendar className="w-3.5 h-3.5 text-blue-400" />
+ <div className="flex flex-wrap items-center gap-3 mt-5 pt-5 border-t border-[#1e3a5f]">
+ <div className="flex items-center gap-2 bg-[#091a33]/50 border border-[#1e3a5f] rounded-md px-3 py-1.5 hover:border-cyan-500/50 transition-colors">
+ <Calendar className="w-3.5 h-3.5 text-cyan-400" />
  <select 
  value={dateFilter}
  onChange={e => setDateFilter(e.target.value)}
@@ -205,8 +205,8 @@ export default function ANPRSearch() {
  </select>
  </div>
  
- <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700/80 rounded-md px-3 py-1.5 hover:border-slate-600 transition-colors">
- <Clock className="w-3.5 h-3.5 text-blue-400" />
+ <div className="flex items-center gap-2 bg-[#091a33]/50 border border-[#1e3a5f] rounded-md px-3 py-1.5 hover:border-cyan-500/50 transition-colors">
+ <Clock className="w-3.5 h-3.5 text-cyan-400" />
  <select 
  value={timeFilter}
  onChange={e => setTimeFilter(e.target.value)}
@@ -218,8 +218,8 @@ export default function ANPRSearch() {
  </select>
  </div>
  
- <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700/80 rounded-md px-3 py-1.5 hover:border-slate-600 transition-colors">
- <Camera className="w-3.5 h-3.5 text-blue-400" />
+ <div className="flex items-center gap-2 bg-[#091a33]/50 border border-[#1e3a5f] rounded-md px-3 py-1.5 hover:border-cyan-500/50 transition-colors">
+ <Camera className="w-3.5 h-3.5 text-cyan-400" />
  <select 
  value={cameraFilter}
  onChange={e => setCameraFilter(e.target.value)}
@@ -232,7 +232,7 @@ export default function ANPRSearch() {
  
  {hasActiveFilters && (
  <>
- <div className="h-5 w-px bg-slate-700 mx-2"></div>
+ <div className="h-5 w-px bg-[#1e3a5f] mx-2"></div>
  <button 
  onClick={resetFilters}
  className="text-xs font-bold text-red-400 flex items-center gap-1.5 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded-md transition-colors"
@@ -246,9 +246,9 @@ export default function ANPRSearch() {
 
  {/* Results */}
  <div className="flex-1 overflow-y-auto custom-scrollbar pb-6">
- <div className="flex items-end gap-3 mb-4 pb-2 border-b border-slate-800/50">
+ <div className="flex items-end gap-3 mb-4 pb-2 border-b border-[#1e3a5f]/50">
  <h3 className="text-[16px] font-black text-white uppercase tracking-wider leading-none">Search Results</h3>
- <span className="text-sm font-bold text-blue-400 leading-none">{vehicleGroups.length} unique vehicles found</span>
+ <span className="text-sm font-bold text-cyan-400 leading-none">{vehicleGroups.length} unique vehicles found</span>
  </div>
  
  <div className="space-y-4">
@@ -261,7 +261,7 @@ export default function ANPRSearch() {
  <Card 
  variant="glass"
  key={group.primaryPlate} 
- className="p-4 hover:border-blue-500/50 transition-all group flex flex-col gap-3"
+ className="p-4 hover:border-cyan-500/50 transition-all group flex flex-col gap-3"
  >
  <div className="flex flex-col md:flex-row gap-4 items-center cursor-pointer" onClick={() => navigate(`/dashboard/tracking?plate=${group.primaryPlate}`)}>
  {/* Images */}
@@ -269,12 +269,12 @@ export default function ANPRSearch() {
  <img 
  src={latest.vehicleImg} 
  alt="Vehicle" 
- className="w-[110px] h-[80px] object-cover rounded-lg border border-slate-700/50 bg-slate-900 shadow-sm" 
+ className="w-[110px] h-[80px] object-cover rounded-lg border border-[#1e3a5f]/50 bg-[#040d1a] shadow-sm" 
  />
  <img 
  src={latest.plateImg} 
  alt="Plate crop" 
- className="w-[90px] h-[80px] object-cover rounded-lg border border-slate-700/50 bg-slate-900 shadow-sm" 
+ className="w-[90px] h-[80px] object-cover rounded-lg border border-[#1e3a5f]/50 bg-[#040d1a] shadow-sm" 
  />
  </div>
 
@@ -294,7 +294,7 @@ export default function ANPRSearch() {
 
  <div className="flex flex-col justify-center">
  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Seen Camera</div>
- <div className="text-sm font-bold text-blue-400 leading-tight">{latest.cameraId}</div>
+ <div className="text-sm font-bold text-cyan-400 leading-tight">{latest.cameraId}</div>
  <div className="text-xs font-medium text-slate-400 mt-0.5">{cam?.location}</div>
  </div>
 
@@ -321,39 +321,39 @@ export default function ANPRSearch() {
 
  <div className="flex flex-col justify-center">
  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Sightings History</div>
- <div className="text-sm font-bold text-slate-200 leading-none">
+ <div className="text-sm font-bold text-slate-300 leading-none">
  {group.detections.length} Total {group.detections.length > 1 ? 'Camera Sightings' : 'Sighting'}
  </div>
  </div>
  </div>
 
  {/* Arrow Action */}
- <div className="shrink-0 p-2.5 bg-slate-800/50 rounded-full group-hover:bg-blue-500 transition-colors">
+ <div className="shrink-0 p-2.5 bg-[#091a33] border border-[#1e3a5f] rounded-full group-hover:bg-cyan-600 group-hover:border-cyan-500 transition-colors">
  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white" />
  </div>
  </div>
 
  {/* Sighting Timeline Drawer inside Card */}
  {group.detections.length > 1 && (
- <div className="mt-2 pt-3 border-t border-slate-800/80">
+ <div className="mt-2 pt-3 border-t border-[#1e3a5f]/80">
  <button 
  onClick={(e) => { e.stopPropagation(); setExpandedPlate(isExpanded ? null : group.primaryPlate); }}
- className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
+ className="text-xs font-bold text-cyan-400 hover:underline flex items-center gap-1"
  >
  {isExpanded ? 'Hide Sighting History' : `View All ${group.detections.length} Sightings Timeline`}
  </button>
 
  {isExpanded && (
- <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+ <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-[#040d1a]/60 p-3 rounded-lg border border-[#1e3a5f]">
  {group.detections.map((d, i) => (
- <div key={i} className="p-2 bg-slate-800/40 rounded border border-slate-800 flex justify-between items-center text-xs">
+ <div key={i} className="p-2 bg-[#081221] rounded border border-[#1e3a5f] flex justify-between items-center text-xs">
  <div>
- <div className="font-bold text-blue-400">{d.cameraId}</div>
+ <div className="font-bold text-cyan-400">{d.cameraId}</div>
  <div className="text-[10px] text-slate-400">{d.location}</div>
  </div>
  <div className="text-right">
  <div className="font-bold text-slate-300">{d.timestamp}</div>
- <div className="text-[10px] text-emerald-400">{(d.confidence * 100).toFixed(0)}% Conf</div>
+ <div className="text-[10px] text-teal-400">{(d.confidence * 100).toFixed(0)}% Conf</div>
  </div>
  </div>
  ))}
@@ -366,9 +366,9 @@ export default function ANPRSearch() {
  })}
  
  {vehicleGroups.length === 0 && (
- <Card variant="glass" className="text-center py-12 border-dashed">
+ <Card variant="glass" className="text-center py-12 border-dashed border-[#1e3a5f]">
  <div className="text-slate-400 mb-2 font-medium">No vehicles found matching current search and filter criteria.</div>
- <button className="text-blue-400 font-bold text-sm hover:underline" onClick={resetFilters}>Reset all filters</button>
+ <button className="text-cyan-400 font-bold text-sm hover:underline" onClick={resetFilters}>Reset all filters</button>
  </Card>
  )}
  </div>

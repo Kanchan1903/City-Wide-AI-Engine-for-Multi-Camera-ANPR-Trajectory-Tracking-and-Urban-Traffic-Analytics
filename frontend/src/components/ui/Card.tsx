@@ -12,9 +12,9 @@ export function Card({ children, className, variant = 'default', ...props }: Car
  className={cn(
  "rounded-xl border overflow-hidden",
  {
- 'bg-slate-800 border-slate-700 shadow-md': variant === 'default',
- 'bg-slate-800 border-slate-700 shadow-sm': variant === 'glass',
- 'bg-slate-800 border-cyan-500/30 shadow-[0_4px_12px_rgba(53,183,176,0.1)]': variant === 'glow',
+ 'bg-[#081221] border-[#1e3a5f] shadow-lg': variant === 'default',
+ 'bg-[#0a1f3d]/60 border-[#1e3a5f]/60 shadow-md backdrop-blur-sm': variant === 'glass',
+ 'bg-[#081221] border-cyan-500/30 shadow-[0_4px_15px_rgba(6,182,212,0.15)]': variant === 'glow',
  },
  className
  )}
@@ -27,7 +27,7 @@ export function Card({ children, className, variant = 'default', ...props }: Car
 
 export function CardHeader({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
  return (
- <div className={cn("px-6 py-4 border-b border-slate-800/60 bg-transparent", className)} {...props}>
+ <div className={cn("px-6 py-4 border-b border-[#1e3a5f]/60 bg-transparent", className)} {...props}>
  {children}
  </div>
  );

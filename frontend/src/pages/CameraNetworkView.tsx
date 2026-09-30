@@ -36,15 +36,15 @@ export default function CameraNetworkView() {
  placeholder="Search cameras..." 
  value={search}
  onChange={e => setSearch(e.target.value)}
- className="pl-9 pr-4 py-2 border border-slate-800 rounded-lg text-sm w-full sm:w-64 focus:border-blue-500 focus:ring-1 focus:ring-[#1769FF] outline-none"
+ className="bg-[#040d1a] text-white pl-9 pr-4 py-2 border border-[#1e3a5f] rounded-lg text-sm w-full sm:w-64 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 outline-none placeholder:text-slate-500"
  />
  </div>
- <div className="flex bg-slate-900 rounded-lg p-1">
+ <div className="flex bg-[#081221] border border-[#1e3a5f] rounded-lg p-1">
  {filters.map(f => (
  <button 
  key={f}
  onClick={() => setFilter(f)}
- className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${filter === f ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}
+ className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${filter === f ? 'bg-[#040d1a] text-cyan-400 border border-[#1e3a5f] shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}
  >
  {f}
  </button>
@@ -58,10 +58,10 @@ export default function CameraNetworkView() {
  <Card 
  variant="glass"
  key={cam.id} 
- className="overflow-hidden hover:border-blue-500/50 transition-all group flex flex-col"
+ className="overflow-hidden hover:border-cyan-500/50 transition-all group flex flex-col"
  >
  {/* Header */}
- <div className="p-4 border-b border-slate-800 flex justify-between items-start">
+ <div className="p-4 border-b border-[#1e3a5f] flex justify-between items-start">
  <div>
  <div className="font-bold text-white text-sm flex items-center gap-2">
  {cam.id}
@@ -78,12 +78,12 @@ export default function CameraNetworkView() {
  </div>
  
  {/* Feed area */}
- <div className="relative aspect-video bg-slate-900 overflow-hidden cursor-pointer" onClick={() => openCameraModal(cam.id)}>
+ <div className="relative aspect-video bg-[#040d1a] overflow-hidden cursor-pointer border-b border-[#1e3a5f]" onClick={() => openCameraModal(cam.id)}>
  <img src={cam.img} alt={cam.id} className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${cam.status === 'offline' ? 'opacity-20 grayscale' : 'opacity-80'}`} />
  
  {/* Overlay button */}
  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
- <button className="bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all">
+ <button className="bg-cyan-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-[0_4px_12px_rgba(6,182,212,0.15)] flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all">
  <Video size={14} /> View Live
  </button>
  </div>
@@ -100,7 +100,7 @@ export default function CameraNetworkView() {
  </div>
 
  {/* Footer */}
- <div className="p-4 bg-slate-900/50/50 flex items-center justify-between mt-auto">
+ <div className="p-4 bg-[#081221] flex items-center justify-between mt-auto">
  <div className="flex items-center text-xs font-semibold text-slate-300">
  <Activity size={14} className="text-cyan-500 mr-1.5" />
  Vehicles: {cam.status === 'online' ? 42 + (i % 10) : 0}
