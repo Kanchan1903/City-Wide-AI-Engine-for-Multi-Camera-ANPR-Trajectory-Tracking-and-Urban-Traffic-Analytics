@@ -13,3 +13,4 @@ for line in lines:
 
 with open(todo_file, 'w', encoding='utf-8') as f:
     f.writelines(new_lines)
+ 
