@@ -24,3 +24,4 @@ This project uses the following open-source libraries:
 - **PostgreSQL / PostGIS** (PostgreSQL License)
 - **YOLO / Ultralytics** (AGPL-3.0 - ensure compliance if deploying commercially)
 - **PaddleOCR** (Apache-2.0)
+ 
