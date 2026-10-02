@@ -18,3 +18,4 @@ echo - Frontend will be available at http://127.0.0.1:5174 (or 5173)
 echo.
 echo You can use this start.bat file to easily launch everything next time.
 pause
+ 
