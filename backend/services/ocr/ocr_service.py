@@ -261,7 +261,7 @@ class OCRService:
                 logger.info(f"Raw OCR Confidence: {best_cand['base_conf']}")
                 logger.info(f"OCR Candidates Count: {total_passes}")
                 logger.info(f"Character Agreement: {char_agreement_ratio}")
-                logger.info(f"Format Score: {format_score}")
+                logger.info(f"Format Bonus: {format_bonus}")
                 logger.info(f"Final Confidence: {best_cand['final_confidence']}")
                 logger.info(f"------------------------")
                 
