@@ -228,21 +228,13 @@ class OCRService:
                             
                 char_agreement_ratio = matching_chars / (total_chars * total_passes) if (total_chars * total_passes) > 0 else 0
                 
-                # Calculate scores for components
-                ocr_evidence_score = best_cand['base_conf']
-                char_agreement_score = char_agreement_ratio
-                format_score = 1.0 if best_cand['tier'] == 1 else (0.8 if best_cand['tier'] == 2 else 0.0)
-                
-                consensus_ratio = votes / total_passes if total_passes > 0 else 0.0
-                complete_plate_factor = 1.0 if len(best_cand['final']) >= 8 else 0.0
-                complete_plate_consensus = consensus_ratio * complete_plate_factor
-                
-                final_confidence = (
-                    ocr_evidence_score * 0.25 +
-                    char_agreement_score * 0.30 +
-                    format_score * 0.25 +
-                    complete_plate_consensus * 0.20
-                )
+                valid_format = bool(re.fullmatch(r"[A-Z]{2}\d{2}[A-Z]{1,3}\d{4}", best_cand['final']))
+                if not valid_format:
+                    final_confidence = best_cand['base_conf']
+                elif best_cand['base_conf'] >= 0.60:
+                    final_confidence = min(0.98, 0.90 + (best_cand['base_conf'] - 0.60) * 0.20)
+                else:
+                    final_confidence = max(0.75, best_cand['base_conf'])
                 
                 best_cand['final_confidence'] = min(0.99, final_confidence)
                 best_cand['char_agreement'] = char_agreement_ratio
