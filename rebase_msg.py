@@ -22,3 +22,4 @@ if content.startswith('fix: '):
 
 with open(msg_file, 'w', encoding='utf-8') as f:
     f.write(content)
+ 
