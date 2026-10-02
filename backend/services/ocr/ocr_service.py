@@ -245,8 +245,9 @@ class OCRService:
                 logger.info(f"Raw OCR confidence: {int(best_cand['base_conf']*100)}%")
                 logger.info(f"Normalized plate: {best_cand['final']}")
                 logger.info(f"Format valid: {best_cand['tier'] in [1, 2]}")
-                logger.info(f"Character agreement: {int(char_agreement_score*100)}%")
-                logger.info(f"OCR consensus: {int(consensus_ratio*100)}%")
+                logger.info(f"Character agreement: {int(char_agreement_ratio*100)}%")
+                consensus = votes / total_passes if total_passes > 0 else 0.0
+                logger.info(f"OCR consensus: {int(consensus*100)}%")
                 logger.info(f"Complete plate: {len(best_cand['final']) >= 8}")
                 logger.info(f"Final confidence: {int(best_cand['final_confidence']*100)}%")
                 logger.info("========================================")
