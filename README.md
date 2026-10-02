@@ -46,3 +46,4 @@ npm run dev
    - Professional dark-mode command center UI using `Space Grotesk` and `JetBrains Mono`. Features Leaflet map layers and D3.js charting.
 5. **Module 5: Alert System**
    - WebSocket-based alerting for blacklisted plates and Isolation Forest anomalies (route deviation).
+ 
