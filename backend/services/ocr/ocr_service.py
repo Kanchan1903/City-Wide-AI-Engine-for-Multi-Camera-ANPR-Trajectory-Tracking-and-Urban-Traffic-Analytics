@@ -229,12 +229,18 @@ class OCRService:
                 char_agreement_ratio = matching_chars / (total_chars * total_passes) if (total_chars * total_passes) > 0 else 0
                 
                 valid_format = bool(re.fullmatch(r"[A-Z]{2}\d{2}[A-Z]{1,3}\d{4}", best_cand['final']))
+                
                 if not valid_format:
                     final_confidence = best_cand['base_conf']
                 elif best_cand['base_conf'] >= 0.60:
                     final_confidence = min(0.98, 0.90 + (best_cand['base_conf'] - 0.60) * 0.20)
                 else:
                     final_confidence = max(0.75, best_cand['base_conf'])
+                    
+                # Strict Rule: If character agreement is perfect (all OCR passes agree on all characters)
+                # and the format is valid, the confidence must be >= 90%
+                if valid_format and char_agreement_ratio >= 0.99:
+                    final_confidence = max(0.91, final_confidence)
                 
                 best_cand['final_confidence'] = min(0.99, final_confidence)
                 best_cand['char_agreement'] = char_agreement_ratio
