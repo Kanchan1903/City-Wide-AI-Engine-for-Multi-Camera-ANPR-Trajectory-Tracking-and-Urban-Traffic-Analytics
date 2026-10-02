@@ -42,10 +42,16 @@ class ANPRPipeline:
                 plate_conf = plate["confidence"]
                 logger.info(f"Processing plate {idx+1}/{len(plates)}: BBox {plate['bbox']}, Confidence: {plate_conf:.2f}")
                 
+                # Add 15% horizontal and 10% vertical padding
+                w_box = x2 - x1
+                h_box = y2 - y1
+                pad_x = int(w_box * 0.15)
+                pad_y = int(h_box * 0.10)
+                
                 # Ensure coordinates are within image bounds
                 h, w = image.shape[:2]
-                x1, y1 = max(0, x1), max(0, y1)
-                x2, y2 = min(w, x2), min(h, y2)
+                x1, y1 = max(0, x1 - pad_x), max(0, y1 - pad_y)
+                x2, y2 = min(w, x2 + pad_x), min(h, y2 + pad_y)
                 
                 if x2 <= x1 or y2 <= y1:
                     logger.warning(f"Invalid bounding box {plate['bbox']} for plate {idx+1}. Skipping.")
@@ -70,7 +76,7 @@ class ANPRPipeline:
                 
                 # OCR
                 ocr_data = self.ocr.extract_text(enhanced_crop)
-                logger.info(f"OCR Result for plate {idx+1}: Text='{ocr_data['normalized_text']}', Confidence={ocr_data['ocr_confidence']}")
+                logger.info(f"OCR Result for plate {idx+1}: Text='{ocr_data['normalized_text']}', Final Confidence={ocr_data.get('final_confidence')}")
                 
                 # Validation
                 validation_data = self.validator.validate(ocr_data["normalized_text"])
@@ -79,7 +85,7 @@ class ANPRPipeline:
                 # Confidence Scoring
                 overall_confidence, conf_level = self._calculate_confidence(
                     plate_conf, 
-                    ocr_data["ocr_confidence"], 
+                    ocr_data.get("final_confidence", ocr_data.get("ocr_confidence", 0.0)), 
                     quality_data["quality_score"],
                     validation_data["format_valid"]
                 )
@@ -98,7 +104,8 @@ class ANPRPipeline:
                     "raw_ocr_text": ocr_data["raw_text"],
                     "normalized_plate_number": ocr_data["normalized_text"],
                     "plate_detection_confidence": plate_conf,
-                    "ocr_confidence": ocr_data["ocr_confidence"],
+                    "ocr_confidence": ocr_data.get("raw_ocr_confidence", 0.0),
+                    "final_confidence": ocr_data.get("final_confidence", 0.0),
                     "quality_score": quality_data["quality_score"],
                     "overall_confidence": overall_confidence,
                     "confidence_level": conf_level,

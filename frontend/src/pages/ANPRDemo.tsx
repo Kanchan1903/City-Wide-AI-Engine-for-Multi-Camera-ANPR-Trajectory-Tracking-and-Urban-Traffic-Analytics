@@ -259,8 +259,8 @@ export default function ANPRDemo() {
                          )}
                        </div>
                        <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                         OCR Confidence: <span className={`${res.confidence_level === 'HIGH' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                           {res.ocr_confidence != null ? (res.ocr_confidence * 100).toFixed(1) : "0.0"}%
+                         FINAL CONFIDENCE: <span className={`${res.confidence_level === 'HIGH' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                           {res.final_confidence != null ? (res.final_confidence * 100).toFixed(1) : (res.ocr_confidence != null ? (res.ocr_confidence * 100).toFixed(1) : "0.0")}%
                          </span>
                        </div>
                      </div>
