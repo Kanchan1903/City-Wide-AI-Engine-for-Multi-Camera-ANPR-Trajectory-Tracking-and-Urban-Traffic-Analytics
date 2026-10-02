@@ -228,20 +228,31 @@ class OCRService:
                             
                 char_agreement_ratio = matching_chars / (total_chars * total_passes) if (total_chars * total_passes) > 0 else 0
                 
-                format_score = 1.0 if best_cand['tier'] == 1 else 0.85
-                completeness_score = min(1.0, total_chars / 10.0)
+                # Calculate agreement bonus based on votes (out of 6 passes)
+                agreement_bonus = 0.0
+                if votes == 2:
+                    agreement_bonus = 0.05
+                elif votes == 3:
+                    agreement_bonus = 0.10
+                elif votes >= 4:
+                    agreement_bonus = 0.15
+                    
+                # Calculate format bonus and define a logical floor
+                format_bonus = 0.0
+                format_floor = 0.0
+                if best_cand['tier'] == 1:
+                    format_bonus = 0.20
+                    format_floor = 0.85 # Perfect syntax match must not be below 85%
+                elif best_cand['tier'] == 2:
+                    format_bonus = 0.15
+                    format_floor = 0.75 # Corrected syntax match must not be below 75%
+                    
+                # Final confidence is base OCR evidence + bonuses
+                final_confidence = best_cand['base_conf'] + agreement_bonus + format_bonus
                 
-                # Weighted transparent confidence calculation:
-                # 25% Base OCR confidence (to keep it defensible)
-                # 45% Character-level agreement across passes
-                # 20% Format syntax adherence
-                # 10% Completeness
-                final_confidence = (
-                    best_cand['base_conf'] * 0.25 +
-                    char_agreement_ratio * 0.45 +
-                    format_score * 0.20 +
-                    completeness_score * 0.10
-                )
+                # Ensure the confidence doesn't arbitrarily drop below the format floor
+                if final_confidence < format_floor:
+                    final_confidence = format_floor
                 
                 best_cand['final_confidence'] = min(0.99, final_confidence)
                 best_cand['char_agreement'] = char_agreement_ratio
