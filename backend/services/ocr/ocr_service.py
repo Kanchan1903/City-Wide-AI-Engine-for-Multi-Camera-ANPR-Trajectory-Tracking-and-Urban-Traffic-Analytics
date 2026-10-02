@@ -228,44 +228,36 @@ class OCRService:
                             
                 char_agreement_ratio = matching_chars / (total_chars * total_passes) if (total_chars * total_passes) > 0 else 0
                 
-                # Calculate agreement bonus based on votes (out of 6 passes)
-                agreement_bonus = 0.0
-                if votes == 2:
-                    agreement_bonus = 0.05
-                elif votes == 3:
-                    agreement_bonus = 0.10
-                elif votes >= 4:
-                    agreement_bonus = 0.15
-                    
-                # Calculate format bonus and define a logical floor
-                format_bonus = 0.0
-                format_floor = 0.0
-                if best_cand['tier'] == 1:
-                    format_bonus = 0.20
-                    format_floor = 0.85 # Perfect syntax match must not be below 85%
-                elif best_cand['tier'] == 2:
-                    format_bonus = 0.15
-                    format_floor = 0.75 # Corrected syntax match must not be below 75%
-                    
-                # Final confidence is base OCR evidence + bonuses
-                final_confidence = best_cand['base_conf'] + agreement_bonus + format_bonus
+                # Calculate scores for components
+                ocr_evidence_score = best_cand['base_conf']
+                char_agreement_score = char_agreement_ratio
+                format_score = 1.0 if best_cand['tier'] == 1 else (0.8 if best_cand['tier'] == 2 else 0.0)
                 
-                # Ensure the confidence doesn't arbitrarily drop below the format floor
-                if final_confidence < format_floor:
-                    final_confidence = format_floor
+                consensus_ratio = votes / total_passes if total_passes > 0 else 0.0
+                complete_plate_factor = 1.0 if len(best_cand['final']) >= 8 else 0.0
+                complete_plate_consensus = consensus_ratio * complete_plate_factor
+                
+                final_confidence = (
+                    ocr_evidence_score * 0.25 +
+                    char_agreement_score * 0.30 +
+                    format_score * 0.25 +
+                    complete_plate_consensus * 0.20
+                )
                 
                 best_cand['final_confidence'] = min(0.99, final_confidence)
                 best_cand['char_agreement'] = char_agreement_ratio
                 
-                logger.info(f"--- CONFIDENCE DEBUG ---")
-                logger.info(f"Raw OCR confidence: {best_cand['base_conf']}")
+                logger.info("========================================")
+                logger.info("ANPR CONFIDENCE DEBUG")
+                logger.info("========================================")
+                logger.info(f"Raw OCR confidence: {int(best_cand['base_conf']*100)}%")
                 logger.info(f"Normalized plate: {best_cand['final']}")
                 logger.info(f"Format valid: {best_cand['tier'] in [1, 2]}")
-                logger.info(f"Character agreement: {char_agreement_ratio}")
-                logger.info(f"OCR consensus: {votes} passes")
-                logger.info(f"Complete plate recognized: {len(best_cand['final']) >= 8}")
-                logger.info(f"Final recognition confidence: {best_cand['final_confidence']}")
-                logger.info(f"------------------------")
+                logger.info(f"Character agreement: {int(char_agreement_score*100)}%")
+                logger.info(f"OCR consensus: {int(consensus_ratio*100)}%")
+                logger.info(f"Complete plate: {len(best_cand['final']) >= 8}")
+                logger.info(f"Final confidence: {int(best_cand['final_confidence']*100)}%")
+                logger.info("========================================")
                 
             elif best_cand:
                 best_cand['final_confidence'] = min(0.99, best_cand['base_conf'])
