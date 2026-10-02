@@ -37,7 +37,7 @@ export default function ANPRDemo() {
  formData.append('file', selectedFile);
  formData.append('camera_id', 'CAM_005'); // default demo camera
 
- const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+ const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001';
  
  const controller = new AbortController();
  const timeoutId = setTimeout(() => controller.abort(), 120000); // 120s timeout for model downloads
@@ -56,13 +56,13 @@ export default function ANPRDemo() {
   clearTimeout(timeoutId);
   console.error("Backend API request timed out or unavailable.", fetchErr);
   data = [{
-  processing_mode: "FAILED",
-  raw_ocr_text: "Failed to connect to the backend API or request timed out."
+  processing_mode: "CONNECTION_FAILED",
+  raw_ocr_text: "Backend unavailable. Is the server running?"
   }];
   }
 
   if (data && data.length === 0) {
-     data = [{ processing_mode: "FAILED", raw_ocr_text: "No license plates detected in the image." }];
+     data = [{ processing_mode: "NO_PLATES", raw_ocr_text: "No license plates detected in the image." }];
   }
  setResults(data);
 
@@ -85,8 +85,8 @@ export default function ANPRDemo() {
  vehicleColor: veh.color || 'White',
  direction: 'Northbound',
  confidence: res.plate_detection_confidence || 0.95,
- plateImg: (selectedFile && selectedFile.type.startsWith('image')) ? (previewUrl || '/plate_mh12.png') : '/plate_mh12.png',
- vehicleImg: (selectedFile && selectedFile.type.startsWith('image')) ? (previewUrl || '/anpr_vehicle_match.png') : '/anpr_vehicle_match.png'
+ plateImg: res.plate_crop_url ? `${apiBase}${res.plate_crop_url}` : '/anpr_plate_crop.png',
+ vehicleImg: previewUrl || '/anpr_vehicle_match.png'
  };
  addDetection(newDetection);
  }
@@ -215,37 +215,57 @@ export default function ANPRDemo() {
  {results.map((res, i) => (
  <Card variant="glass" key={i} className="p-4 relative overflow-hidden">
  
- {res.processing_mode === 'FAILED' ? (
- <div className="text-red-400 font-bold p-4 text-center">
- Processing Failed:<br/>
- <span className="text-xs font-normal text-slate-400">{res.raw_ocr_text}</span>
- </div>
- ) : (
-                 <>
+ {['FAILED', 'CONNECTION_FAILED', 'NO_PLATES'].includes(res.processing_mode) ? (
                   <div className="flex flex-col gap-6 py-4">
                     <div className="w-full flex justify-center">
                       <div className="h-24 md:h-32 bg-slate-900 rounded border border-slate-800 overflow-hidden relative inline-block">
-                        {(selectedFile && selectedFile.type.startsWith('image')) ? (
-                          <img src={previewUrl || ''} className="h-full w-auto object-contain opacity-90" alt="Crop" />
-                        ) : (
-                          <img src="/anpr_plate_crop.png" className="h-full w-auto object-contain opacity-90" alt="Crop" />
-                        )}
-                        <div className="absolute inset-0 border-2 border-blue-500/50 m-1 rounded shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+                        <img src={previewUrl || '/anpr_plate_crop.png'} className="h-full w-auto object-contain opacity-50 grayscale" alt="Crop" />
+                        <div className="absolute inset-0 border-2 border-red-500/50 m-1 rounded shadow-[0_0_15px_rgba(239,68,68,0.5)]"></div>
                       </div>
                     </div>
                     
                     <div className="text-center">
-                      <div className="text-4xl md:text-5xl font-black text-white font-mono tracking-tight mb-2">
-                        {res.plate_number ? res.plate_number : <span className="text-2xl text-slate-500 font-sans tracking-normal">Plate not recognized</span>}
+                      <div className="text-2xl font-bold text-red-400 font-sans tracking-normal mb-2">
+                        {res.processing_mode === 'CONNECTION_FAILED' ? "Connection Error" : 
+                         res.processing_mode === 'NO_PLATES' ? "No plates detected" : "Processing Failed"}
                       </div>
-                      <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                        OCR Confidence: <span className={`${res.confidence_level === 'HIGH' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                          {res.ocr_confidence != null ? (res.ocr_confidence * 100).toFixed(1) : "0.0"}%
-                        </span>
+                      <div className="text-sm font-normal text-slate-400">
+                        {res.raw_ocr_text}
                       </div>
                     </div>
                   </div>
-                </>
+ ) : (
+                  <>
+                   <div className="flex flex-col gap-6 py-4">
+                     <div className="w-full flex justify-center">
+                       <div className="h-24 md:h-32 bg-slate-900 rounded border border-slate-800 overflow-hidden relative inline-block">
+                         {res.plate_crop_url ? (
+                           <img src={`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001'}${res.plate_crop_url}`} className="h-full w-auto object-contain opacity-90" alt="Detected Plate Crop" />
+                         ) : (
+                           <img src={previewUrl || '/anpr_plate_crop.png'} className="h-full w-auto object-contain opacity-90" alt="Crop" />
+                         )}
+                         <div className="absolute inset-0 border-2 border-blue-500/50 m-1 rounded shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+                       </div>
+                     </div>
+                     
+                     <div className="text-center">
+                       <div className="text-4xl md:text-5xl font-black text-white font-mono tracking-tight mb-2">
+                         {res.plate_number === "Unable to read plate" ? (
+                           <span className="text-2xl text-amber-400 font-sans tracking-normal">Unable to read plate</span>
+                         ) : res.plate_number ? (
+                           res.plate_number
+                         ) : (
+                           <span className="text-2xl text-slate-500 font-sans tracking-normal">Plate not recognized</span>
+                         )}
+                       </div>
+                       <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                         OCR Confidence: <span className={`${res.confidence_level === 'HIGH' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                           {res.ocr_confidence != null ? (res.ocr_confidence * 100).toFixed(1) : "0.0"}%
+                         </span>
+                       </div>
+                     </div>
+                   </div>
+                 </>
               )}
             </Card>
  ))}

@@ -7,7 +7,7 @@ from ultralytics import YOLO
 logger = logging.getLogger(__name__)
 
 class YoloService:
-    def __init__(self, model_path: str = None, confidence_threshold: float = 0.5):
+    def __init__(self, model_path: str = None, confidence_threshold: float = 0.2):
         self.confidence_threshold = confidence_threshold
         self.model = None
         self.model_loaded = False

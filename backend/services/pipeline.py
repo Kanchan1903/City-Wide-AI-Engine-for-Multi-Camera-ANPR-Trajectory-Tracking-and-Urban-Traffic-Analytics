@@ -53,6 +53,14 @@ class ANPRPipeline:
                     
                 plate_crop = image[y1:y2, x1:x2]
                 
+                # Save plate crop to data/processed
+                import os
+                os.makedirs(os.path.join("data", "processed"), exist_ok=True)
+                crop_filename = f"crop_{uuid.uuid4().hex[:8]}.jpg"
+                crop_path = os.path.join("data", "processed", crop_filename)
+                cv2.imwrite(crop_path, plate_crop)
+                plate_crop_url = f"/data/processed/{crop_filename}"
+                
                 # Quality check
                 quality_data = self.quality.evaluate_quality(plate_crop)
                 logger.info(f"Quality Check for plate {idx+1}: Score={quality_data['quality_score']}, Status={quality_data['quality_status']}")
@@ -96,6 +104,7 @@ class ANPRPipeline:
                     "confidence_level": conf_level,
                     "vehicle_bbox": plate["bbox"], # Simplification, ideally use associated vehicle bbox
                     "plate_bbox": plate["bbox"],
+                    "plate_crop_url": plate_crop_url,
                     "format_valid": validation_data["format_valid"],
                     "processing_mode": processing_mode,
                     "review_status": "PENDING"
@@ -123,6 +132,7 @@ class ANPRPipeline:
                     "confidence_level": "LOW",
                     "vehicle_bbox": None,
                     "plate_bbox": None,
+                    "plate_crop_url": None,
                     "format_valid": False,
                     "processing_mode": "FAILED",
                     "review_status": "PENDING"

@@ -77,6 +77,7 @@ async def process_image(file: UploadFile = File(...), camera_id: str = Form("CAM
             overall_confidence=res.get("overall_confidence"),
             confidence_level=res.get("confidence_level"),
             vehicle_image_path=res.get("vehicle_image_url"),
+            plate_crop_path=res.get("plate_crop_url"),
             format_valid=res.get("format_valid"),
             processing_mode=res.get("processing_mode"),
             review_status=res.get("review_status")
