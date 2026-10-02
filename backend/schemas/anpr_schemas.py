@@ -11,6 +11,7 @@ class DetectionBase(BaseModel):
     normalized_plate_number: Optional[str] = None
     plate_detection_confidence: Optional[float] = None
     ocr_confidence: Optional[float] = None
+    final_confidence: Optional[float] = None
     quality_score: Optional[float] = None
     overall_confidence: Optional[float] = None
     confidence_level: Optional[str] = None
