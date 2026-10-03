@@ -83,6 +83,15 @@ export default function TopNav() {
  >
  Cameras
  </NavLink>
+
+ <NavLink 
+ to="/dashboard/anpr" 
+ className={({ isActive }) => 
+ `transition-colors flex items-center ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`
+ }
+ >
+ Demo
+ </NavLink>
  </div>
  {/* Action Toggle / Logout */}
  <div className="flex items-center justify-end shrink-0 ml-2 lg:ml-4 gap-3">
