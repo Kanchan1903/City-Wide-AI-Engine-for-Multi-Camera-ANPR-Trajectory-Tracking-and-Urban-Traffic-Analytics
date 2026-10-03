@@ -102,6 +102,11 @@ const initialVehicles: Record<string, Vehicle> = {
  'MH14XY9999': { plate: 'MH14XY9999', make: 'Honda City', color: 'Silver', type: 'Car', img: '/veh_mh14.png' },
  'DL8CX4321': { plate: 'DL8CX4321', make: 'Toyota Fortuner', color: 'Black', type: 'SUV', img: '/veh_dl8c.png' },
  'KA01HQ1122': { plate: 'KA01HQ1122', make: 'Tata Nexon', color: 'Blue', type: 'SUV', img: '/veh_ka01.png' },
+ 'MH12TR4545': { plate: 'MH12TR4545', make: 'Tata Signa', color: 'White', type: 'Truck', img: '/veh_mh14.png' },
+ 'MH12BU1212': { plate: 'MH12BU1212', make: 'Volvo 9400', color: 'Red', type: 'Bus', img: '/veh_mh14.png' },
+ 'MH12BK9900': { plate: 'MH12BK9900', make: 'Honda Activa', color: 'Grey', type: 'Two Wheeler', img: '/veh_mh14.png' },
+ 'MH12BK5555': { plate: 'MH12BK5555', make: 'Bajaj Pulsar', color: 'Black', type: 'Two Wheeler', img: '/veh_mh14.png' },
+ 'MH12AT8888': { plate: 'MH12AT8888', make: 'Bajaj RE', color: 'Yellow', type: 'Auto', img: '/veh_mh14.png' },
 };
 
 const initialDetections: Detection[] = [
@@ -133,6 +138,13 @@ const initialDetections: Detection[] = [
 
  // Low Confidence / Unclear Plate Sample (Needs Review, NOT Alert)
  { id: 'd13', plate: 'UNCLEAR_382', cameraId: 'CAM_005', location: 'University Road', latitude: 18.532, longitude: 73.829, timestamp: '11:42:10', vehicleType: 'Car', vehicleColor: 'Grey', confidence: 0.42, direction: 'Eastbound', plateImg: '/anpr_plate_crop.png', vehicleImg: '/anpr_vehicle_match.png' },
+
+ // Diverse vehicle types for dashboard presentation
+ { id: 'd16', plate: 'MH12TR4545', cameraId: 'CAM_008', location: 'Baner', latitude: 18.560, longitude: 73.780, timestamp: '19:15:00', vehicleType: 'Truck', vehicleColor: 'White', confidence: 0.95, direction: 'Southbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
+ { id: 'd17', plate: 'MH12BU1212', cameraId: 'CAM_006', location: 'Swargate', latitude: 18.501, longitude: 73.859, timestamp: '18:50:00', vehicleType: 'Bus', vehicleColor: 'Red', confidence: 0.91, direction: 'Northbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
+ { id: 'd18', plate: 'MH12BK9900', cameraId: 'CAM_002', location: 'Shivajinagar', latitude: 18.525, longitude: 73.855, timestamp: '18:40:00', vehicleType: 'Two Wheeler', vehicleColor: 'Grey', confidence: 0.88, direction: 'Eastbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
+ { id: 'd19', plate: 'MH12BK5555', cameraId: 'CAM_003', location: 'JM Road', latitude: 18.527, longitude: 73.858, timestamp: '19:05:00', vehicleType: 'Two Wheeler', vehicleColor: 'Black', confidence: 0.94, direction: 'Westbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
+ { id: 'd20', plate: 'MH12AT8888', cameraId: 'CAM_001', location: 'Hinjawadi', latitude: 18.559, longitude: 73.786, timestamp: '18:30:00', vehicleType: 'Auto', vehicleColor: 'Yellow', confidence: 0.89, direction: 'Northbound', plateImg: '/plate_mh14.png', vehicleImg: '/veh_mh14.png' },
 ];
 
 export const useStore = create<AppState>((set, get) => ({
