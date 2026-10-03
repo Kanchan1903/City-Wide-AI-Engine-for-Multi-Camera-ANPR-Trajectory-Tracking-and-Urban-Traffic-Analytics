@@ -161,10 +161,6 @@ export default function DashboardView() {
                 <p className="text-sm font-medium text-slate-400 mt-1">ANPR Confidence Avg</p>
               </div>
               
-              {/* Button */}
-              <button className="mt-6 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-6 rounded-full shadow-[0_4px_12px_rgba(6,182,212,0.15)] transition-colors text-sm">
-                View Detailed Report
-              </button>
             </div>
             
             <div className="flex flex-col flex-1 max-w-2xl">

@@ -95,12 +95,7 @@ export default function VehicleIntelligenceDrawer() {
  >
  <Camera size={16} className="mr-2" /> View Camera
  </Button>
- <Button 
- onClick={() => { closeVehicleDrawer(); navigate('/dashboard/reports'); }}
- variant="outline" className="w-full justify-center bg-white shadow-sm font-bold text-slate-600 hover:bg-slate-50" size="sm"
- >
- <FileText size={16} className="mr-2" /> Report
- </Button>
+ 
  <Button 
  onClick={() => { 
  setIsFlagged(true); 
