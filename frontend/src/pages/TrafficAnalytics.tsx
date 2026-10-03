@@ -393,7 +393,6 @@ export default function TrafficAnalytics() {
  <Area type="monotone" dataKey="yesterday" name="Yesterday" stroke="#64748b" strokeWidth={2} fillOpacity={1} fill="url(#colorYesterday)" />
  <Area type="monotone" dataKey="today" name="Today" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
  </AreaChart>
- </AreaChart>
  </ResponsiveContainer>
  </div>
  </CardContent>
