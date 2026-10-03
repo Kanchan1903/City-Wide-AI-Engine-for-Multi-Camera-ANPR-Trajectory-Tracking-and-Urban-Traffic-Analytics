@@ -192,9 +192,9 @@ export default function TrafficAnalytics() {
          <div key={`item-${index}`} className="flex items-center justify-between w-32">
            <div className="flex items-center gap-2">
              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-             <span className="text-slate-300 font-bold text-sm">{entry.value}</span>
+             <span className="text-slate-300 font-bold text-sm">{entry.name}</span>
            </div>
-           <span className="text-white font-bold text-sm">{entry.payload.value}</span>
+           <span className="text-white font-bold text-sm">{entry.value}</span>
          </div>
        ))}
      </div>
