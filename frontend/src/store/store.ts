@@ -139,9 +139,11 @@ export const useStore = create<AppState>((set, get) => ({
  cameras: initialCameras,
  vehicles: initialVehicles,
  detections: initialDetections,
- alerts: [
- { id: 'a1', title: 'Suspicious Vehicle Detected', description: 'Vehicle MH12AB1234 spotted at CAM_004', timestamp: Date.now() - 10 * 60 * 1000, type: 'warning', read: false, plate: 'MH12AB1234', cameraId: 'CAM_004' }
- ],
+  alerts: [
+  { id: 'a1', title: 'Blacklisted Plate', description: 'MH12AB1234 detected at CAM_001', timestamp: Date.now() - 40 * 60 * 1000, type: 'error', read: false, plate: 'MH12AB1234', cameraId: 'CAM_001' },
+  { id: 'a2', title: 'Speeding Ticket', description: 'DL8CA8989 over limit (85km/h)', timestamp: Date.now() - 60 * 60 * 1000, type: 'warning', read: false, plate: 'DL8CA8989' },
+  { id: 'a3', title: 'Daily Report Generated', description: "System compiled yesterday's stats", timestamp: Date.now() - 120 * 60 * 1000, type: 'info', read: false }
+  ],
  globalSearchPlate: 'MH12AB1234',
  demoModeActive: false,
  selectedVehicleId: null,

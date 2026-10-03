@@ -45,7 +45,7 @@ export default function AlertsView() {
  }
  const camera = alert.cameraId ? cameras.find(c => c.id === alert.cameraId) : (detection ? cameras.find(c => c.id === detection.cameraId) : null);
 
- const plate = detection ? detection.plate : (alert.plate || 'Unknown Vehicle');
+ const plate = detection ? detection.plate : (alert.plate || 'SYSTEM');
  const timeDisplay = detection ? detection.timestamp : formatTimeAgo(alert.timestamp);
  
  let description = alert.description;

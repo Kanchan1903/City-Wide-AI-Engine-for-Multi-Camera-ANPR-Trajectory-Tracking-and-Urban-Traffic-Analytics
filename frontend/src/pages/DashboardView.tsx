@@ -55,6 +55,13 @@ const vehicleTypeData = [
   { name: 'Trucks', value: 5, color: '#6366f1' },
 ];
 
+const getTimeAgo = (ts: number) => {
+  const mins = Math.floor((Date.now() - ts) / 60000);
+  if (mins < 60) return `${mins} Mins Ago`;
+  if (mins < 120) return `1 hour ago`;
+  return `${Math.floor(mins/60)} hours ago`;
+};
+
 export default function DashboardView() {
   const { stats, alerts, cameras, detections, vehicles, closeVehicleDrawer } = useStore();
   const [activeTab, setActiveTab] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'>('MONTHLY');
@@ -310,40 +317,24 @@ export default function DashboardView() {
           <h2 className="text-sm font-bold text-white mb-8">Recent Detections</h2>
           
           <div className="flex flex-col gap-8">
-            
-            <div className="flex items-start gap-4">
-              <div className="text-xs font-bold text-slate-500 w-[70px] pt-1">40 Mins Ago</div>
-              <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 border border-red-500/20">
-                <AlertCircle size={18} className="text-red-400" />
+            {alerts.slice(0, 3).map((alert) => (
+              <div key={alert.id} className="flex items-start gap-4">
+                <div className="text-xs font-bold text-slate-500 w-[70px] pt-1">{getTimeAgo(alert.timestamp)}</div>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${
+                  alert.type === 'error' ? 'bg-red-500/10 border-red-500/20' : 
+                  alert.type === 'warning' ? 'bg-cyan-500/10 border-cyan-500/20' : 
+                  'bg-indigo-500/10 border-indigo-500/20'
+                }`}>
+                  {alert.type === 'error' ? <AlertCircle size={18} className="text-red-400" /> :
+                   alert.type === 'warning' ? <Car size={18} className="text-cyan-400" /> :
+                   <FileText size={18} className="text-indigo-400" />}
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white">{alert.title}</div>
+                  <div className="text-xs font-medium text-slate-400 mt-1">{alert.description}</div>
+                </div>
               </div>
-              <div>
-                <div className="text-sm font-bold text-white">Blacklisted Plate</div>
-                <div className="text-xs font-medium text-slate-400 mt-1">MH12AB1234 detected at CAM_001</div>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="text-xs font-bold text-slate-500 w-[70px] pt-1">1 hour ago</div>
-              <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0 border border-cyan-500/20">
-                <Car size={18} className="text-cyan-400" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-white">Speeding Ticket</div>
-                <div className="text-xs font-medium text-slate-400 mt-1">DL8CA8989 over limit (85km/h)</div>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="text-xs font-bold text-slate-500 w-[70px] pt-1">2 hours ago</div>
-              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0 border border-indigo-500/20">
-                <FileText size={18} className="text-indigo-400" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-white">Daily Report Generated</div>
-                <div className="text-xs font-medium text-slate-400 mt-1">System compiled yesterday's stats</div>
-              </div>
-            </div>
-
+            ))}
           </div>
         </div>
 
