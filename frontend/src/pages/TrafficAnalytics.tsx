@@ -187,7 +187,7 @@ export default function TrafficAnalytics() {
  const renderCustomLegend = (props: any) => {
    const { payload } = props;
    return (
-     <div className="flex flex-col gap-2 pl-4 justify-center h-full">
+     <div className="flex flex-col gap-2 justify-center">
        {payload.map((entry: any, index: number) => (
          <div key={`item-${index}`} className="flex items-center justify-between w-32">
            <div className="flex items-center gap-2">
@@ -400,25 +400,29 @@ export default function TrafficAnalytics() {
  <CardHeader>
  <CardTitle className="text-sm font-bold text-white">Fleet Composition</CardTitle>
  </CardHeader>
- <CardContent className="p-4 flex-1 flex flex-col items-center">
+ <CardContent className="p-4 flex-1 flex flex-col items-center justify-center">
  {vehicleTypeData.length === 0 ? (
-   <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-500 font-medium text-sm h-[200px]">
+   <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-500 font-medium text-sm">
      <AlertTriangle size={32} className="text-slate-600 mb-3" />
      No data available for this time period.
    </div>
  ) : (
- <div className="w-full flex-1 min-h-[200px]">
+ <div className="w-full flex-1 min-h-[200px] flex items-center justify-center gap-8">
+ <div className="w-[160px] h-[160px]">
  <ResponsiveContainer width="100%" height="100%">
  <PieChart>
- <Pie data={vehicleTypeData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
+ <Pie data={vehicleTypeData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none" cx="50%" cy="50%">
  {vehicleTypeData.map((entry, index) => (
  <Cell key={`cell-${index}`} fill={entry.color} />
  ))}
  </Pie>
  <Tooltip content={<CustomTooltip />} />
- <Legend content={renderCustomLegend} verticalAlign="middle" align="right" />
  </PieChart>
  </ResponsiveContainer>
+ </div>
+ <div>
+   {renderCustomLegend({ payload: vehicleTypeData })}
+ </div>
  </div>
  )}
  </CardContent>
