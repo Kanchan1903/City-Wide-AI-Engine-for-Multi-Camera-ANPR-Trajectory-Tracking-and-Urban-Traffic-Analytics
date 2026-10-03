@@ -390,8 +390,8 @@ export default function TrafficAnalytics() {
  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
  <Tooltip contentStyle={{ backgroundColor: '#081221', borderColor: '#1e3a5f', color: '#f8fafc', borderRadius: '8px' }} />
  <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }} />
- <Area type="monotone" dataKey="yesterday" name="Yesterday" stroke="#64748b" strokeWidth={2} fillOpacity={1} fill="url(#colorYesterday)" />
- <Area type="monotone" dataKey="today" name="Today" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
+ <Area type="linear" dataKey="yesterday" name="Yesterday" stroke="#64748b" strokeWidth={2} fillOpacity={1} fill="url(#colorYesterday)" />
+ <Area type="linear" dataKey="today" name="Today" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
  </AreaChart>
  </ResponsiveContainer>
  </div>
