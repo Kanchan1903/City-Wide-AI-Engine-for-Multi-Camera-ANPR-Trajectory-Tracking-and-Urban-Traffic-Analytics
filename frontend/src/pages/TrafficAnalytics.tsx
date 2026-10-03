@@ -187,14 +187,14 @@ export default function TrafficAnalytics() {
  const renderCustomLegend = (props: any) => {
    const { payload } = props;
    return (
-     <div className="flex flex-col gap-2 mt-4 ml-8">
+     <div className="flex flex-col gap-2 pl-4 justify-center h-full">
        {payload.map((entry: any, index: number) => (
          <div key={`item-${index}`} className="flex items-center justify-between w-32">
            <div className="flex items-center gap-2">
              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-             <span className="text-slate-300 font-bold text-sm">{entry.name}</span>
+             <span className="text-slate-300 font-bold text-sm">{entry.value}</span>
            </div>
-           <span className="text-white font-bold text-sm">{entry.value}</span>
+           <span className="text-white font-bold text-sm">{entry.payload.value}</span>
          </div>
        ))}
      </div>
@@ -388,7 +388,7 @@ export default function TrafficAnalytics() {
  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
  <Tooltip contentStyle={{ backgroundColor: '#081221', borderColor: '#1e3a5f', color: '#f8fafc', borderRadius: '8px' }} />
  <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }} />
- <Area type="monotone" dataKey="today" name="Today" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
+ <Area type="linear" dataKey="today" name="Today" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
  </AreaChart>
  </ResponsiveContainer>
  </div>
@@ -407,22 +407,18 @@ export default function TrafficAnalytics() {
      No data available for this time period.
    </div>
  ) : (
- <div className="w-full flex-1 min-h-[200px] flex items-center">
- <div className="w-1/2 h-full">
+ <div className="w-full flex-1 min-h-[200px]">
  <ResponsiveContainer width="100%" height="100%">
  <PieChart>
- <Pie data={vehicleTypeData} innerRadius={50} outerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
+ <Pie data={vehicleTypeData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
  {vehicleTypeData.map((entry, index) => (
  <Cell key={`cell-${index}`} fill={entry.color} />
  ))}
  </Pie>
  <Tooltip content={<CustomTooltip />} />
+ <Legend content={renderCustomLegend} verticalAlign="middle" align="right" />
  </PieChart>
  </ResponsiveContainer>
- </div>
- <div className="w-1/2 flex items-center justify-center">
-   {renderCustomLegend({ payload: vehicleTypeData })}
- </div>
  </div>
  )}
  </CardContent>
