@@ -11,25 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { useStore } from '../store/store';
 import CityMap from '../components/traffic/CityMap';
 
-const hourlyTrafficData = [
- { time: '06:00', yesterday: 210, today: 195 },
- { time: '08:00', yesterday: 380, today: 410 },
- { time: '10:00', yesterday: 320, today: 345 },
- { time: '12:00', yesterday: 290, today: 305 },
- { time: '14:00', yesterday: 270, today: 280 },
- { time: '16:00', yesterday: 340, today: 350 },
- { time: '18:00', yesterday: 410, today: 390 },
- { time: '20:00', yesterday: 250, today: 260 },
-];
-
-const fallbackVehicleTypeData = [
- { name: 'Car', value: 62, color: '#06b6d4' },
- { name: 'Two Wheeler', value: 24, color: '#22d3ee' },
- { name: 'Bus', value: 6, color: '#1e3a5f' },
- { name: 'Truck', value: 5, color: '#ef4444' },
- { name: 'Others', value: 3, color: '#94a3b8' },
-];
-
 export default function TrafficAnalytics() {
  const { vehicles, detections, cameras } = useStore();
  const [timeFilter, setTimeFilter] = useState('Last 1 hour');
@@ -37,118 +18,188 @@ export default function TrafficAnalytics() {
 
  // Determine the "current" time based on the latest detection timestamp in the dataset
  const parsedTimeFilter = React.useMemo(() => {
- if (detections.length === 0) return { now: 0, window: 3600 };
- 
- let maxTime = 0;
- detections.forEach(d => {
- const parts = d.timestamp.split(':');
- if (parts.length === 3) {
- const seconds = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
- if (seconds > maxTime) maxTime = seconds;
- }
- });
+   if (detections.length === 0) return { now: 0, window: 3600 };
+   
+   let maxTime = 0;
+   detections.forEach(d => {
+     const parts = d.timestamp.split(':');
+     if (parts.length === 3) {
+       const seconds = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+       if (seconds > maxTime) maxTime = seconds;
+     }
+   });
 
- let windowSeconds = 3600;
- if (timeFilter === 'Live (Last 5m)') windowSeconds = 5 * 60;
- else if (timeFilter === 'Last 15 min') windowSeconds = 15 * 60;
- else if (timeFilter === 'Last 30 min') windowSeconds = 30 * 60;
- else if (timeFilter === 'Last 1 hour') windowSeconds = 60 * 60;
- else windowSeconds = 24 * 3600;
+   let windowSeconds = 3600;
+   if (timeFilter === 'Live (Last 5m)') windowSeconds = 5 * 60;
+   else if (timeFilter === 'Last 15 min') windowSeconds = 15 * 60;
+   else if (timeFilter === 'Last 30 min') windowSeconds = 30 * 60;
+   else if (timeFilter === 'Last 1 hour') windowSeconds = 60 * 60;
+   else windowSeconds = 24 * 3600;
 
- return { now: maxTime, window: windowSeconds };
+   return { now: maxTime, window: windowSeconds };
  }, [detections, timeFilter]);
 
- // Calculate Heatmap and Analytics based strictly on real detections within the time window
+ const getCameraZone = React.useCallback((cameraId: string) => {
+   const cam = cameras.find(c => c.id === cameraId);
+   if (!cam) return 'Unknown';
+   return cam.longitude > 73.85 ? 'East Zone' : 'West Zone';
+ }, [cameras]);
+
+ // Filter detections by time AND zone
+ const validDets = React.useMemo(() => {
+   return detections.filter(d => {
+     // 1. Time Filter
+     const parts = d.timestamp.split(':');
+     if (parts.length !== 3) return false;
+     const detSeconds = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+     const inTimeWindow = detSeconds >= (parsedTimeFilter.now - parsedTimeFilter.window) && detSeconds <= parsedTimeFilter.now;
+     
+     if (!inTimeWindow) return false;
+
+     // 2. Zone Filter
+     if (zoneFilter !== 'All Zones (Pune)') {
+       const zone = getCameraZone(d.cameraId);
+       if (zone !== zoneFilter) return false;
+     }
+
+     return true;
+   });
+ }, [detections, parsedTimeFilter, zoneFilter, getCameraZone]);
+
+ // Calculate Heatmap and Analytics based strictly on real detections
  const { heatmapData, hotspotDataList, vehiclesDetected, avgFlow, maxDensityZone } = React.useMemo(() => {
- const validDets = detections.filter(d => {
- const parts = d.timestamp.split(':');
- if (parts.length !== 3) return false;
- const detSeconds = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
- return detSeconds >= (parsedTimeFilter.now - parsedTimeFilter.window) && detSeconds <= parsedTimeFilter.now;
- });
+   const cameraCounts: Record<string, number> = {};
+   validDets.forEach(d => {
+     cameraCounts[d.cameraId] = (cameraCounts[d.cameraId] || 0) + 1;
+   });
 
- const cameraCounts: Record<string, number> = {};
- validDets.forEach(d => {
- cameraCounts[d.cameraId] = (cameraCounts[d.cameraId] || 0) + 1;
- });
+   const hmd: [number, number, number][] = [];
+   const spots: any[] = [];
+   let highestDensityLocation = 'No congestion detected';
+   let highestDensityValue = 0;
 
- // Normalize density
- const maxCount = Math.max(...Object.values(cameraCounts), 1);
- 
- const hmd: [number, number, number][] = [];
- const spots: any[] = [];
- let highestDensityLocation = 'None';
- let highestDensityValue = 0;
+   // Threshold based on raw counts
+   const CONGESTION_THRESHOLD = 3;
 
- cameras.forEach(cam => {
- const count = cameraCounts[cam.id] || 0;
- if (count > 0) {
- const intensity = Math.min(1.0, count / Math.max(maxCount, 5)); // Cap to avoid 100% on low traffic
- 
- // Exact real data point
- hmd.push([cam.latitude, cam.longitude, intensity]);
- 
- // SIMULATED INTERPOLATION: 
- // We add a slight geographic scatter around the camera junction strictly for visual heatmap spread. 
- // The magnitude/density is directly tied to the real detection count at the node.
- const visualSpread = Math.min(count, 15);
- for(let i=0; i < visualSpread; i++) {
- hmd.push([
- cam.latitude + (Math.random()-0.5)*0.008, 
- cam.longitude + (Math.random()-0.5)*0.008, 
- intensity * 0.6
- ]);
- }
+   cameras.forEach(cam => {
+     if (zoneFilter !== 'All Zones (Pune)' && getCameraZone(cam.id) !== zoneFilter) return;
 
- if (intensity > highestDensityValue) {
- highestDensityValue = intensity;
- highestDensityLocation = cam.location;
- }
+     const count = cameraCounts[cam.id] || 0;
+     if (count > 0) {
+       const intensity = Math.min(1.0, count / 5);
+       
+       // Exact real data point only
+       hmd.push([cam.latitude, cam.longitude, intensity]);
 
- let status = 'Normal';
- if (intensity > 0.7) status = 'Critical';
- else if (intensity > 0.4) status = 'High';
- else if (intensity > 0.2) status = 'Moderate';
+       let status = 'Normal';
+       if (count >= CONGESTION_THRESHOLD) {
+         if (intensity > 0.8) status = 'Critical';
+         else status = 'High';
+         
+         spots.push({
+           name: cam.location,
+           delay: `${count * 2} mins delay`,
+           status,
+           intensity
+         });
 
- if (intensity > 0.2) {
- spots.push({
- name: cam.location,
- delay: `${Math.round(intensity * 12)} mins delay`,
- status,
- intensity
- });
- }
- }
- });
+         if (intensity > highestDensityValue) {
+           highestDensityValue = intensity;
+           highestDensityLocation = cam.location;
+         }
+       }
+     }
+   });
 
- spots.sort((a, b) => b.intensity - a.intensity);
+   spots.sort((a, b) => b.intensity - a.intensity);
 
- return { 
- heatmapData: hmd,
- hotspotDataList: spots.slice(0, 5),
- vehiclesDetected: validDets.length,
- avgFlow: validDets.length > 0 ? Math.round(validDets.length / Object.keys(cameraCounts).length) : 0,
- maxDensityZone: highestDensityLocation
- };
- }, [detections, cameras, parsedTimeFilter]);
+   return { 
+     heatmapData: hmd,
+     hotspotDataList: spots.slice(0, 5),
+     vehiclesDetected: validDets.length,
+     avgFlow: validDets.length > 0 ? Math.round(validDets.length / Object.keys(cameraCounts).length) : 0,
+     maxDensityZone: highestDensityLocation
+   };
+ }, [validDets, cameras, zoneFilter, getCameraZone]);
 
  const vehicleTypeData = React.useMemo(() => {
- const counts: Record<string, number> = { 'Car': 0, 'SUV': 0, 'Truck': 0, 'Two Wheeler': 0, 'Bus': 0, 'Others': 0 };
- Object.values(vehicles).forEach(v => {
- if (counts[v.type] !== undefined) counts[v.type]++;
- else counts['Others']++;
- });
- const total = Object.values(vehicles).length;
- if (total === 0) return fallbackVehicleTypeData;
- 
- return [
- { name: 'Car/SUV', value: Math.round(((counts['Car'] + counts['SUV']) / total) * 100) || 62, color: '#06b6d4' },
- { name: 'Two Wheeler', value: Math.round((counts['Two Wheeler'] / total) * 100) || 24, color: '#22d3ee' },
- { name: 'Bus', value: Math.round((counts['Bus'] / total) * 100) || 6, color: '#1e3a5f' },
- { name: 'Truck', value: Math.round((counts['Truck'] / total) * 100) || 5, color: '#ef4444' },
- { name: 'Others', value: Math.round((counts['Others'] / total) * 100) || 3, color: '#94a3b8' },
- ].filter(item => item.value > 0);
- }, [vehicles]);
+   const counts: Record<string, number> = { 'Car': 0, 'SUV': 0, 'Truck': 0, 'Two Wheeler': 0, 'Bus': 0, 'Others': 0 };
+   validDets.forEach(d => {
+     const v = vehicles[d.vehicleId] || Object.values(vehicles).find(veh => veh.plate === d.plate);
+     if (v && counts[v.type] !== undefined) {
+       counts[v.type]++;
+     } else {
+       counts['Others']++;
+     }
+   });
+   
+   return [
+     { name: 'Car', value: counts['Car'] + counts['SUV'], color: '#06b6d4' },
+     { name: 'Motorcycle', value: counts['Two Wheeler'], color: '#22d3ee' },
+     { name: 'Bus', value: counts['Bus'], color: '#1e3a5f' },
+     { name: 'Truck', value: counts['Truck'], color: '#ef4444' },
+     { name: 'Others', value: counts['Others'], color: '#94a3b8' },
+   ].filter(item => item.value > 0);
+ }, [validDets, vehicles]);
+
+ const historicalVolumeData = React.useMemo(() => {
+   const hourlyCounts = new Array(24).fill(0);
+   
+   const zoneFilteredDets = detections.filter(d => {
+     if (zoneFilter !== 'All Zones (Pune)' && getCameraZone(d.cameraId) !== zoneFilter) return false;
+     return true;
+   });
+
+   zoneFilteredDets.forEach(d => {
+     const parts = d.timestamp.split(':');
+     if (parts.length > 0) {
+       const hour = parseInt(parts[0], 10);
+       if (hour >= 0 && hour < 24) {
+         hourlyCounts[hour]++;
+       }
+     }
+   });
+
+   const data = [];
+   for (let i = 0; i < 24; i++) {
+     if (i % 2 === 0 || hourlyCounts[i] > 0) {
+       data.push({
+         time: `${i.toString().padStart(2, '0')}:00`,
+         today: hourlyCounts[i]
+       });
+     }
+   }
+   return data;
+ }, [detections, zoneFilter, getCameraZone]);
+
+ const CustomTooltip = ({ active, payload, label }: any) => {
+   if (active && payload && payload.length) {
+     return (
+       <div className="bg-[#081221] border border-[#1e3a5f] p-3 rounded-lg shadow-xl">
+         <p className="text-white font-bold text-sm mb-1">{`${payload[0].payload.name}`}</p>
+         <p className="text-cyan-400 font-bold text-xs">{`${payload[0].value} Detected`}</p>
+       </div>
+     );
+   }
+   return null;
+ };
+
+ const renderCustomLegend = (props: any) => {
+   const { payload } = props;
+   return (
+     <div className="flex flex-col gap-2 mt-4 ml-8">
+       {payload.map((entry: any, index: number) => (
+         <div key={`item-${index}`} className="flex items-center justify-between w-32">
+           <div className="flex items-center gap-2">
+             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
+             <span className="text-slate-300 font-bold text-sm">{entry.payload.name}</span>
+           </div>
+           <span className="text-white font-bold text-sm">{entry.payload.value}</span>
+         </div>
+       ))}
+     </div>
+   );
+ };
 
  return (
  <div className="flex flex-col gap-6 h-full animate-in fade-in duration-300">
@@ -269,7 +320,7 @@ export default function TrafficAnalytics() {
  <div className="flex items-start gap-2 mb-2">
  <Info size={14} className="text-cyan-400 mt-0.5" />
  <p className="text-[10px] text-slate-300 leading-tight">
- <span className="font-bold text-white">Data Note:</span> Heatmap is generated exclusively from live ANPR detection counts at existing camera junctions. Inter-camera density is a simulated visual interpolation bounded around nodes.
+ <span className="font-bold text-white">Data Note:</span> Heatmap is generated exclusively from live ANPR detection counts.
  </p>
  </div>
  </div>
@@ -282,12 +333,13 @@ export default function TrafficAnalytics() {
  </CardHeader>
  <CardContent className="p-0 flex-1 overflow-y-auto custom-scrollbar">
  {hotspotDataList.length === 0 ? (
- <div className="p-8 text-center text-slate-500 font-medium text-sm">
+ <div className="p-8 text-center text-slate-500 font-medium text-sm h-full flex flex-col items-center justify-center">
+ <AlertTriangle size={32} className="text-slate-600 mb-3" />
  No congestion hotspots detected in this time window.
  </div>
  ) : (
  <div className="divide-y divide-[#1e3a5f]">
- {hotspotDataList.map((spot, i) => (
+ {hotspotDataList.map((spot: any, i: number) => (
  <div key={i} className="p-4 flex items-center justify-between hover:bg-[#0a1f3d]/50 transition-colors">
  <div className="flex items-center gap-3">
  <div className="w-6 h-6 rounded-full bg-[#081221] text-slate-400 flex items-center justify-center text-xs font-bold border border-[#1e3a5f]">
@@ -316,14 +368,16 @@ export default function TrafficAnalytics() {
  <CardTitle className="text-sm font-bold text-white">Historical Volume (Past 24h)</CardTitle>
  </CardHeader>
  <CardContent className="p-4 flex-1 flex flex-col">
+ {historicalVolumeData.every(d => d.today === 0) ? (
+   <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-500 font-medium text-sm h-[200px]">
+     <BarChart3 size={32} className="text-slate-600 mb-3" />
+     No historical data available for selected zone.
+   </div>
+ ) : (
  <div className="w-full flex-1 min-h-[200px]">
  <ResponsiveContainer width="100%" height="100%">
- <AreaChart data={hourlyTrafficData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+ <AreaChart data={historicalVolumeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
  <defs>
- <linearGradient id="colorYesterday" x1="0" y1="0" x2="0" y2="1">
- <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.3}/>
- <stop offset="95%" stopColor="#94a3b8" stopOpacity={0}/>
- </linearGradient>
  <linearGradient id="colorToday" x1="0" y1="0" x2="0" y2="1">
  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
@@ -334,11 +388,11 @@ export default function TrafficAnalytics() {
  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
  <Tooltip contentStyle={{ backgroundColor: '#081221', borderColor: '#1e3a5f', color: '#f8fafc', borderRadius: '8px' }} />
  <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#94a3b8' }} />
- <Area type="monotone" dataKey="yesterday" name="Yesterday" stroke="#64748b" strokeWidth={2} fillOpacity={1} fill="url(#colorYesterday)" />
  <Area type="monotone" dataKey="today" name="Today" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorToday)" />
  </AreaChart>
  </ResponsiveContainer>
  </div>
+ )}
  </CardContent>
  </Card>
 
@@ -347,18 +401,30 @@ export default function TrafficAnalytics() {
  <CardTitle className="text-sm font-bold text-white">Fleet Composition</CardTitle>
  </CardHeader>
  <CardContent className="p-4 flex-1 flex flex-col items-center">
- <div className="w-full flex-1 min-h-[200px]">
+ {vehicleTypeData.length === 0 ? (
+   <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-500 font-medium text-sm h-[200px]">
+     <AlertTriangle size={32} className="text-slate-600 mb-3" />
+     No data available for this time period.
+   </div>
+ ) : (
+ <div className="w-full flex-1 min-h-[200px] flex items-center">
+ <div className="w-1/2 h-full">
  <ResponsiveContainer width="100%" height="100%">
  <PieChart>
- <Pie data={vehicleTypeData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
+ <Pie data={vehicleTypeData} innerRadius={50} outerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
  {vehicleTypeData.map((entry, index) => (
  <Cell key={`cell-${index}`} fill={entry.color} />
  ))}
  </Pie>
- <Tooltip contentStyle={{ backgroundColor: '#081221', borderColor: '#1e3a5f', color: '#f8fafc', borderRadius: '8px' }} />
+ <Tooltip content={<CustomTooltip />} />
  </PieChart>
  </ResponsiveContainer>
  </div>
+ <div className="w-1/2 flex items-center justify-center">
+   {renderCustomLegend({ payload: vehicleTypeData })}
+ </div>
+ </div>
+ )}
  </CardContent>
  </Card>
  </div>
